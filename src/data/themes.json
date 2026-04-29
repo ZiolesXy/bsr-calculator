@@ -1,44 +1,206 @@
 [
   {
-    "id": "light",
-    "label": "Light",
-    "description": "Warm paper surface with bright red-orange accents.",
+    "id": "ichigo",
+    "label": "Ichigo",
+    "description": "getsuga tenshou",
     "colors": {
-      "--app-bg": "#f4efe7",
-      "--surface-primary": "#fffaf3",
-      "--surface-secondary": "#f0e4d5",
-      "--surface-accent": "#fee5d2",
-      "--text-primary": "#1f1b18",
-      "--text-secondary": "#6b5a4d",
-      "--border-color": "rgba(111, 87, 62, 0.16)",
-      "--brand": "#c9481a",
-      "--brand-soft": "rgba(201, 72, 26, 0.12)",
-      "--pill-green": "#5ba36b",
-      "--pill-blue": "#4f86d9",
-      "--pill-purple": "#8968d6",
-      "--pill-yellow": "#c89d27",
-      "--shadow-color": "0 22px 60px rgba(78, 47, 21, 0.12)"
+      "--app-bg": "#0f0f10",
+      "--surface-primary": "#18181b",
+      "--surface-secondary": "#232326",
+      "--surface-accent": "#2f1b12",
+      "--text-primary": "#f5f5f5",
+      "--text-secondary": "#b0b0b0",
+      "--border-color": "rgba(255,140,0,0.25)",
+      "--brand": "#ff8c00",
+      "--brand-soft": "rgba(255,140,0,0.18)",
+      "--shadow-color": "0 25px 70px rgba(0,0,0,0.6)"
     }
   },
   {
-    "id": "dark",
-    "label": "Dark",
-    "description": "Deep graphite interface with amber highlights for night sessions.",
+    "id": "aizen",
+    "label": "Aizen",
+    "description": "yokoso watashi no soul society",
     "colors": {
-      "--app-bg": "#111417",
-      "--surface-primary": "#171d22",
-      "--surface-secondary": "#202930",
-      "--surface-accent": "#2c211d",
-      "--text-primary": "#f7f3ee",
-      "--text-secondary": "#b7b0a8",
-      "--border-color": "rgba(255, 255, 255, 0.08)",
-      "--brand": "#ff8a3d",
-      "--brand-soft": "rgba(255, 138, 61, 0.14)",
-      "--pill-green": "#66c080",
-      "--pill-blue": "#6aa5ff",
-      "--pill-purple": "#ac8cff",
-      "--pill-yellow": "#f0be4f",
-      "--shadow-color": "0 24px 64px rgba(0, 0, 0, 0.45)"
+      "--app-bg": "#1a1023",
+      "--surface-primary": "#231530",
+      "--surface-secondary": "#2e1c42",
+      "--surface-accent": "#3b2556",
+      "--text-primary": "#f5ecff",
+      "--text-secondary": "#bca8d6",
+      "--border-color": "rgba(180,150,220,0.15)",
+      "--brand": "#8b5cf6",
+      "--brand-soft": "rgba(139,92,246,0.2)",
+      "--shadow-color": "0 25px 70px rgba(139,92,246,0.35)"
+    }
+  },
+  {
+    "id": "rukia",
+    "label": "Rukia",
+    "description": "Bankai Haka no togame",
+    "colors": {
+      "--app-bg": "#f4f8fb",
+      "--surface-primary": "#ffffff",
+      "--surface-secondary": "#e8f1f8",
+      "--surface-accent": "#d6e6f5",
+      "--text-primary": "#1a2530",
+      "--text-secondary": "#5c6f82",
+      "--border-color": "rgba(120,160,200,0.2)",
+      "--brand": "#7fb3ff",
+      "--brand-soft": "rgba(127,179,255,0.18)",
+      "--shadow-color": "0 20px 60px rgba(120,160,200,0.18)"
+    }
+  },
+  {
+    "id": "urahara",
+    "label": "Urahara",
+    "description": "urahara kisuke",
+    "colors": {
+      "--app-bg": "#eef5ea",
+      "--surface-primary": "#ffffff",
+      "--surface-secondary": "#dfead8",
+      "--surface-accent": "#c8dbbd",
+      "--text-primary": "#1f2a1f",
+      "--text-secondary": "#5f735f",
+      "--border-color": "rgba(100,140,100,0.2)",
+      "--brand": "#6b8f3e",
+      "--brand-soft": "rgba(107,143,62,0.18)",
+      "--shadow-color": "0 20px 60px rgba(100,140,100,0.2)"
+    }
+  },
+  {
+    "id": "quincy",
+    "label": "Quincy",
+    "description": "ore wa nawa yhwach",
+    "colors": {
+      "--app-bg": "#0a0b10",
+      "--surface-primary": "#11131a",
+      "--surface-secondary": "#1a1d28",
+      "--surface-accent": "#23283a",
+      "--text-primary": "#f0f2ff",
+      "--text-secondary": "#9aa3c0",
+      "--border-color": "rgba(120,140,255,0.15)",
+      "--brand": "#4c6fff",
+      "--brand-soft": "rgba(76,111,255,0.2)",
+      "--shadow-color": "0 30px 80px rgba(20,30,80,0.6)"
+    }
+  },
+  {
+    "id": "zaraki",
+    "label": "Zaraki",
+    "description": "Zaraki Kenpachi Theme",
+    "colors": {
+      "--app-bg": "#140909",
+      "--surface-primary": "#1f0f0f",
+      "--surface-secondary": "#2a1515",
+      "--surface-accent": "#3a1c1c",
+      "--text-primary": "#ffecec",
+      "--text-secondary": "#d6a8a8",
+      "--border-color": "rgba(255,80,80,0.2)",
+      "--brand": "#ff3b3b",
+      "--brand-soft": "rgba(255,59,59,0.2)",
+      "--shadow-color": "0 25px 70px rgba(120,20,20,0.5)"
+    }
+  },
+  {
+    "id": "byakuya",
+    "label": "Byakuya",
+    "description": "Bankai Senbonsakura Kangeyoshi",
+    "colors": {
+      "--app-bg": "#fff5f7",
+      "--surface-primary": "#ffe4ea",
+      "--surface-secondary": "#ffd6df",
+      "--surface-accent": "#ffc2d1",
+      "--text-primary": "#3a1f26",
+      "--text-secondary": "#7a4a55",
+      "--border-color": "rgba(255,170,190,0.2)",
+      "--brand": "#ff8fab",
+      "--brand-soft": "rgba(255,143,171,0.2)",
+      "--shadow-color": "0 20px 60px rgba(255,160,180,0.25)"
+    }
+  },
+  {
+    "id": "mayuri",
+    "label": "Mayuri",
+    "description": "Bankai Kochiki Asogi Jiso",
+    "colors": {
+      "--app-bg": "#0f0f14",
+      "--surface-primary": "#191926",
+      "--surface-secondary": "#23233a",
+      "--surface-accent": "#2e2e52",
+      "--text-primary": "#f5f5ff",
+      "--text-secondary": "#b8b8d9",
+      "--border-color": "rgba(200,180,255,0.2)",
+      "--brand": "#d4ff00",
+      "--brand-soft": "rgba(212,255,0,0.2)",
+      "--shadow-color": "0 25px 70px rgba(180,0,255,0.4)"
+    }
+  },
+  {
+    "id": "hitsugaya",
+    "label": "Hitsugaya",
+    "description": "Bankai Daiguruen Hyorinmaru",
+    "colors": {
+      "--app-bg": "#eef7ff",
+      "--surface-primary": "#ffffff",
+      "--surface-secondary": "#dceeff",
+      "--surface-accent": "#c6e4ff",
+      "--text-primary": "#102030",
+      "--text-secondary": "#4f6f8f",
+      "--border-color": "rgba(120,180,255,0.2)",
+      "--brand": "#4da6ff",
+      "--brand-soft": "rgba(77,166,255,0.2)",
+      "--shadow-color": "0 20px 60px rgba(77,166,255,0.25)"
+    }
+  },
+  {
+    "id": "ulquiorra",
+    "label": "Ulquiorra",
+    "description": "Espada no 4",
+    "colors": {
+      "--app-bg": "#0d1412",
+      "--surface-primary": "#151f1c",
+      "--surface-secondary": "#1f2a26",
+      "--surface-accent": "#2a3a33",
+      "--text-primary": "#e8f5ef",
+      "--text-secondary": "#9fb5ad",
+      "--border-color": "rgba(120,180,150,0.15)",
+      "--brand": "#6fa98c",
+      "--brand-soft": "rgba(111,169,140,0.2)",
+      "--shadow-color": "0 25px 70px rgba(20,60,40,0.5)"
+    }
+  },
+  {
+    "id": "yamamoto",
+    "label": "Yamamoto",
+    "description": "Bankai Zanka no Tachi",
+    "colors": {
+      "--app-bg": "#1a0f0a",
+      "--surface-primary": "#26150f",
+      "--surface-secondary": "#331c14",
+      "--surface-accent": "#4a261a",
+      "--text-primary": "#fff1e6",
+      "--text-secondary": "#d6a88c",
+      "--border-color": "rgba(255,120,60,0.2)",
+      "--brand": "#ff6a00",
+      "--brand-soft": "rgba(255,106,0,0.2)",
+      "--shadow-color": "0 25px 70px rgba(255,80,20,0.4)"
+    }
+  },
+  {
+    "id": "yoruichi",
+    "label": "Yoruichi",
+    "description": "Stealth lightning purple theme.",
+    "colors": {
+      "--app-bg": "#120f1a",
+      "--surface-primary": "#1c1626",
+      "--surface-secondary": "#261f33",
+      "--surface-accent": "#33294a",
+      "--text-primary": "#f5ecff",
+      "--text-secondary": "#bca8d6",
+      "--border-color": "rgba(180,150,220,0.2)",
+      "--brand": "#9b5cff",
+      "--brand-soft": "rgba(155,92,255,0.2)",
+      "--shadow-color": "0 25px 70px rgba(155,92,255,0.4)"
     }
   }
 ]
