@@ -1,0 +1,44 @@
+[
+  {
+    "id": "light",
+    "label": "Light",
+    "description": "Warm paper surface with bright red-orange accents.",
+    "colors": {
+      "--app-bg": "#f4efe7",
+      "--surface-primary": "#fffaf3",
+      "--surface-secondary": "#f0e4d5",
+      "--surface-accent": "#fee5d2",
+      "--text-primary": "#1f1b18",
+      "--text-secondary": "#6b5a4d",
+      "--border-color": "rgba(111, 87, 62, 0.16)",
+      "--brand": "#c9481a",
+      "--brand-soft": "rgba(201, 72, 26, 0.12)",
+      "--pill-green": "#5ba36b",
+      "--pill-blue": "#4f86d9",
+      "--pill-purple": "#8968d6",
+      "--pill-yellow": "#c89d27",
+      "--shadow-color": "0 22px 60px rgba(78, 47, 21, 0.12)"
+    }
+  },
+  {
+    "id": "dark",
+    "label": "Dark",
+    "description": "Deep graphite interface with amber highlights for night sessions.",
+    "colors": {
+      "--app-bg": "#111417",
+      "--surface-primary": "#171d22",
+      "--surface-secondary": "#202930",
+      "--surface-accent": "#2c211d",
+      "--text-primary": "#f7f3ee",
+      "--text-secondary": "#b7b0a8",
+      "--border-color": "rgba(255, 255, 255, 0.08)",
+      "--brand": "#ff8a3d",
+      "--brand-soft": "rgba(255, 138, 61, 0.14)",
+      "--pill-green": "#66c080",
+      "--pill-blue": "#6aa5ff",
+      "--pill-purple": "#ac8cff",
+      "--pill-yellow": "#f0be4f",
+      "--shadow-color": "0 24px 64px rgba(0, 0, 0, 0.45)"
+    }
+  }
+]

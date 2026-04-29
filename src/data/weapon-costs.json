@@ -1,0 +1,23 @@
+{
+  "hammerCosts": [
+    { "from": 1, "to": 20, "green": 0, "blue": 0, "purple": 0 },
+    { "from": 20, "to": 30, "green": 0, "blue": 6, "purple": 0 },
+    { "from": 30, "to": 40, "green": 0, "blue": 12, "purple": 0 },
+    { "from": 40, "to": 50, "green": 6, "blue": 0, "purple": 0 },
+    { "from": 50, "to": 60, "green": 10, "blue": 0, "purple": 0 },
+    { "from": 60, "to": 70, "green": 14, "blue": 0, "purple": 0 },
+    { "from": 70, "to": 80, "green": 0, "blue": 0, "purple": 6 },
+    { "from": 80, "to": 90, "green": 0, "blue": 0, "purple": 7 },
+    { "from": 90, "to": 100, "green": 0, "blue": 0, "purple": 8 }
+  ],
+  "weaponGoldBrackets": [
+    { "from": 20, "to": 30, "gold": 1500 },
+    { "from": 30, "to": 40, "gold": 3000 },
+    { "from": 40, "to": 50, "gold": 6000 },
+    { "from": 50, "to": 60, "gold": 9000 },
+    { "from": 60, "to": 70, "gold": 12000 },
+    { "from": 70, "to": 80, "gold": 18000 },
+    { "from": 80, "to": 90, "gold": 24000 },
+    { "from": 90, "to": 100, "gold": 30000 }
+  ]
+}

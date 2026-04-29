@@ -1,0 +1,52 @@
+import { useMemo } from 'react'
+import defaultSettings from '../data/default-settings.json'
+import type { PassiveResult, SkillState } from '../types'
+import { calculatePassiveTotals, skillLevels } from '../utils/calculator'
+
+const skillArtCosts = defaultSettings.skill.artCosts
+const passiveCosts = defaultSettings.passives
+
+export function useSkillCalculator(state: SkillState) {
+  return useMemo(() => {
+    const skillMultiplier = Math.max(state.selectedTypes.length, 1)
+    const totals = skillLevels.reduce(
+      (acc, level) => {
+        if (level <= state.current || level > state.target) return acc
+        const row = skillArtCosts[String(level) as keyof typeof skillArtCosts]
+        acc.green += row.greenArt * skillMultiplier
+        acc.blue += row.blueArt * skillMultiplier
+        acc.purple += row.purpleArt * skillMultiplier
+        acc.kans += row.kans * skillMultiplier
+        return acc
+      },
+      { green: 0, blue: 0, purple: 0, kans: 0 },
+    )
+
+    const needed = {
+      green: Math.max(0, totals.green - state.ownedArts.green),
+      blue: Math.max(0, totals.blue - state.ownedArts.blue),
+      purple: Math.max(0, totals.purple - state.ownedArts.purple),
+    }
+
+    const passiveResults = {
+      passive1: calculatePassiveTotals(passiveCosts.passive1, state.passiveLevels.passive1.current, state.passiveLevels.passive1.target),
+      passive2: calculatePassiveTotals(passiveCosts.passive2, state.passiveLevels.passive2.current, state.passiveLevels.passive2.target),
+      passive3: calculatePassiveTotals(passiveCosts.passive3, state.passiveLevels.passive3.current, state.passiveLevels.passive3.target),
+    } satisfies Record<keyof SkillState['passiveLevels'], PassiveResult>
+
+    const passiveTotalOmamori =
+      passiveResults.passive1.omamori + passiveResults.passive2.omamori + passiveResults.passive3.omamori
+    const passiveTotalKans =
+      passiveResults.passive1.kans + passiveResults.passive2.kans + passiveResults.passive3.kans
+
+    return {
+      skillMultiplier,
+      totals,
+      needed,
+      passiveResults,
+      passiveTotalOmamori,
+      passiveTotalKans,
+      passiveMissingOmamori: Math.max(0, passiveTotalOmamori - state.ownedOmamori),
+    }
+  }, [state])
+}

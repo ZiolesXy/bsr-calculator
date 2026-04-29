@@ -1,0 +1,113 @@
+{
+  "books": { "green": 500, "blue": 3000, "purple": 10000, "yellow": 20000 },
+  "essences": {
+    "20-30": { "green": 0, "blue": 6, "purple": 0 },
+    "30-40": { "green": 0, "blue": 12, "purple": 0 },
+    "40-50": { "green": 6, "blue": 0, "purple": 0 },
+    "50-60": { "green": 10, "blue": 0, "purple": 0 },
+    "60-70": { "green": 14, "blue": 0, "purple": 0 },
+    "70-80": { "green": 0, "blue": 0, "purple": 6 },
+    "80-90": { "green": 0, "blue": 0, "purple": 7 },
+    "90-100": { "green": 0, "blue": 0, "purple": 8 }
+  },
+  "character": {
+    "kans": {
+      "1-20": 7500,
+      "20-30": 12900,
+      "30-40": 23800,
+      "40-50": 41200,
+      "50-60": 66700,
+      "60-70": 101300,
+      "70-80": 145100,
+      "80-90": 193300,
+      "90-100": 239000
+    },
+    "ascensionKans": {
+      "1-20": 0,
+      "20-30": 2500,
+      "30-40": 5000,
+      "40-50": 10000,
+      "50-60": 15000,
+      "60-70": 20000,
+      "70-80": 30000,
+      "80-90": 40000,
+      "90-100": 50000
+    }
+  },
+  "weapon": {
+    "tamahaganeExp": { "green": 100, "blue": 600, "purple": 2000, "yellow": 4000 },
+    "tamahaganeXpCosts": {
+      "1-20": 19120,
+      "20-30": 33876,
+      "30-40": 62756,
+      "40-50": 108888,
+      "50-60": 176864,
+      "60-70": 268808,
+      "70-80": 382280,
+      "80-90": 510496,
+      "90-100": 636384
+    },
+    "hammers": {
+      "20-30": { "green": 0, "blue": 6, "purple": 0 },
+      "30-40": { "green": 0, "blue": 12, "purple": 0 },
+      "40-50": { "green": 6, "blue": 0, "purple": 0 },
+      "50-60": { "green": 10, "blue": 0, "purple": 0 },
+      "60-70": { "green": 14, "blue": 0, "purple": 0 },
+      "70-80": { "green": 0, "blue": 0, "purple": 6 },
+      "80-90": { "green": 0, "blue": 0, "purple": 7 },
+      "90-100": { "green": 0, "blue": 0, "purple": 8 }
+    },
+    "gold": {
+      "20-30": 1500,
+      "30-40": 3000,
+      "40-50": 6000,
+      "50-60": 9000,
+      "60-70": 12000,
+      "70-80": 18000,
+      "80-90": 24000,
+      "90-100": 30000
+    },
+    "ascensionKans": {
+      "20-30": 8500,
+      "30-40": 15875,
+      "40-50": 28125,
+      "50-60": 45875,
+      "60-70": 67875,
+      "70-80": 96000,
+      "80-90": 129750,
+      "90-100": 159625
+    }
+  },
+  "skill": {
+    "base": 30,
+    "multipliers": { "active": 1, "passive": 0.8, "ultimate": 1.8 },
+    "artCosts": {
+      "1": { "greenArt": 0, "blueArt": 0, "purpleArt": 0, "kans": 0 },
+      "2": { "greenArt": 2, "blueArt": 0, "purpleArt": 0, "kans": 2500 },
+      "3": { "greenArt": 4, "blueArt": 0, "purpleArt": 0, "kans": 5000 },
+      "4": { "greenArt": 8, "blueArt": 0, "purpleArt": 0, "kans": 10000 },
+      "5": { "greenArt": 0, "blueArt": 4, "purpleArt": 0, "kans": 15000 },
+      "6": { "greenArt": 0, "blueArt": 7, "purpleArt": 0, "kans": 20000 },
+      "7": { "greenArt": 0, "blueArt": 0, "purpleArt": 6, "kans": 30000 },
+      "8": { "greenArt": 0, "blueArt": 0, "purpleArt": 7, "kans": 40000 },
+      "9": { "greenArt": 0, "blueArt": 0, "purpleArt": 10, "kans": 50000 }
+    }
+  },
+  "passives": {
+    "passive1": {
+      "1": { "omamori": 2, "kans": 6000 },
+      "2": { "omamori": 8, "kans": 19000 },
+      "3": { "omamori": 14, "kans": 70000 }
+    },
+    "passive2": {
+      "1": { "omamori": 4, "kans": 10500 },
+      "2": { "omamori": 10, "kans": 27000 },
+      "3": { "omamori": 16, "kans": 100000 }
+    },
+    "passive3": {
+      "1": { "omamori": 6, "kans": 16500 },
+      "2": { "omamori": 12, "kans": 43500 },
+      "3": { "omamori": 18, "kans": 150000 }
+    }
+  }
+}
