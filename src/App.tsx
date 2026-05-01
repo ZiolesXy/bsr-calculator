@@ -32,6 +32,101 @@ const extraTabs: Array<TabDefinition<ExtraTabId>> = [
   { id: 'daily-schedule', label: 'Daily Schedule', eyebrow: 'Farming tracker' },
 ]
 
+type ActiveTabContentProps = {
+  activeExtraTab: ExtraTabId
+  activeTab: TabId
+  activeTheme: ReturnType<typeof useTheme>['activeTheme']
+  isExtraLoading: boolean
+  isMobile: boolean
+  mobileExtraScreen: 'menu' | 'page'
+  onExtraTabChange: (tabId: ExtraTabId) => void
+  onThemeChange: ReturnType<typeof useTheme>['setThemeId']
+  themeCatalog: ReturnType<typeof useTheme>['themeCatalog']
+}
+
+function ExtraLoadingContent() {
+  return (
+    <>
+      <section className="panel panel--wide extra-loading">
+        <div className="extra-loading__spinner" aria-hidden="true" />
+        <p className="section-tag">Extra</p>
+        <h2>Preparing total planner</h2>
+        <p>Loading character, weapon, and skill inputs...</p>
+      </section>
+      <section className="panel stats-panel extra-loading">
+        <p className="section-tag">Extra Output</p>
+        <div className="stat-card"><span>Status</span><strong>Loading planner...</strong></div>
+        <div className="stat-card"><span>Please wait</span><strong>Preparing total output</strong></div>
+      </section>
+    </>
+  )
+}
+
+function MobileExtraMenu({ onExtraTabChange }: { onExtraTabChange: (tabId: ExtraTabId) => void }) {
+  return (
+    <section className="mobile-menu panel panel--wide">
+      <div className="panel__header">
+        <div>
+          <p className="section-tag">Extra</p>
+          <h2>Pilih tools extra</h2>
+        </div>
+      </div>
+      <div className="mobile-menu__grid">
+        {extraTabs.map((tab) => (
+          <button key={tab.id} type="button" className="mobile-menu__card" onClick={() => onExtraTabChange(tab.id)}>
+            <small>{tab.eyebrow}</small>
+            <strong>{tab.label}</strong>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function ActiveTabContent({
+  activeExtraTab,
+  activeTab,
+  activeTheme,
+  isExtraLoading,
+  isMobile,
+  mobileExtraScreen,
+  onExtraTabChange,
+  onThemeChange,
+  themeCatalog,
+}: ActiveTabContentProps) {
+  const shouldShowExtraLoading =
+    activeTab === 'extra' &&
+    activeExtraTab === 'total-planner' &&
+    isExtraLoading &&
+    (!isMobile || mobileExtraScreen === 'page')
+
+  if (shouldShowExtraLoading) return <ExtraLoadingContent />
+
+  switch (activeTab) {
+    case 'character':
+      return <CharacterTab />
+    case 'weapon':
+      return <WeaponTab />
+    case 'skill':
+      return <SkillTab />
+    case 'extra':
+      if (isMobile && mobileExtraScreen === 'menu') {
+        return <MobileExtraMenu onExtraTabChange={onExtraTabChange} />
+      }
+
+      return (
+        <ExtraTab
+          activeExtraTab={activeExtraTab}
+          onExtraTabChange={onExtraTabChange}
+          extraTabs={extraTabs}
+          showExtraTabNavigation={!isMobile}
+        />
+      )
+    case 'settings':
+      return <SettingsTab themes={themeCatalog} activeTheme={activeTheme} onThemeChange={onThemeChange} />
+  }
+}
+
 function AppLayout() {
   const [activeTab, setActiveTab] = useState<TabId>('character')
   const [activeExtraTab, setActiveExtraTab] = useState<ExtraTabId>('total-planner')
@@ -86,63 +181,6 @@ function AppLayout() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }, [isMobile])
-  const activeTabContent = useMemo(() => {
-    if (activeTab === 'extra' && activeExtraTab === 'total-planner' && isExtraLoading && (!isMobile || mobileExtraScreen === 'page')) {
-      return (
-        <>
-          <section className="panel panel--wide extra-loading">
-            <div className="extra-loading__spinner" aria-hidden="true" />
-            <p className="section-tag">Extra</p>
-            <h2>Preparing total planner</h2>
-            <p>Loading character, weapon, and skill inputs...</p>
-          </section>
-          <section className="panel stats-panel extra-loading">
-            <p className="section-tag">Extra Output</p>
-            <div className="stat-card"><span>Status</span><strong>Loading planner...</strong></div>
-            <div className="stat-card"><span>Please wait</span><strong>Preparing total output</strong></div>
-          </section>
-        </>
-      )
-    }
-
-    if (activeTab === 'character') return <CharacterTab />
-    if (activeTab === 'weapon') return <WeaponTab />
-    if (activeTab === 'skill') return <SkillTab />
-    if (activeTab === 'extra') {
-      if (isMobile && mobileExtraScreen === 'menu') {
-        return (
-          <section className="mobile-menu panel panel--wide">
-            <div className="panel__header">
-              <div>
-                <p className="section-tag">Extra</p>
-                <h2>Pilih tools extra</h2>
-              </div>
-            </div>
-            <div className="mobile-menu__grid">
-              {extraTabs.map((tab) => (
-                <button key={tab.id} type="button" className="mobile-menu__card" onClick={() => openExtraTab(tab.id)}>
-                  <small>{tab.eyebrow}</small>
-                  <strong>{tab.label}</strong>
-                </button>
-              ))}
-            </div>
-          </section>
-        )
-      }
-
-      return (
-        <ExtraTab
-          activeExtraTab={activeExtraTab}
-          onExtraTabChange={openExtraTab}
-          extraTabs={extraTabs}
-          showExtraTabNavigation={!isMobile}
-        />
-      )
-    }
-
-    return <SettingsTab themes={themeCatalog} activeTheme={activeTheme} onThemeChange={setThemeId} />
-  }, [activeExtraTab, activeTab, activeTheme, isExtraLoading, isMobile, mobileExtraScreen, openExtraTab, setThemeId, themeCatalog])
-
   return (
     <div className="app-shell">
       <header className="hero-panel">
@@ -165,7 +203,17 @@ function AppLayout() {
               onBack={handleBackToMenu}
             />
           )}
-          {activeTabContent}
+          <ActiveTabContent
+            activeExtraTab={activeExtraTab}
+            activeTab={activeTab}
+            activeTheme={activeTheme}
+            isExtraLoading={isExtraLoading}
+            isMobile={isMobile}
+            mobileExtraScreen={mobileExtraScreen}
+            onExtraTabChange={openExtraTab}
+            onThemeChange={setThemeId}
+            themeCatalog={themeCatalog}
+          />
         </main>
       )}
     </div>
