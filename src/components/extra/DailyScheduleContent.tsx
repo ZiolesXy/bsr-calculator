@@ -140,6 +140,18 @@ function getFarmRewardAmount(item: ScheduleItem) {
   return reward?.[item.color] ?? 0
 }
 
+function getHighestRewardRarity(category: FarmingCategory, farmLevel: string) {
+  const reward = farmingRewards[category]?.[farmLevel as FarmingLevel]
+  return rarityFallbackOrder.find((color) => (reward?.[color] ?? 0) > 0)
+}
+
+function canUseFarmAddButton(item: ScheduleItem) {
+  if (item.progressUnit === 'farm') return true
+  if (!overflowCategories.includes(item.category)) return getFarmRewardAmount(item) > 0
+
+  return item.color === getHighestRewardRarity(item.category, item.farmLevel)
+}
+
 function getFallbackRarities(color: ResourceColor) {
   const colorIndex = rarityFallbackOrder.indexOf(color)
   if (colorIndex < 0) return [color]
@@ -149,11 +161,72 @@ function getFallbackRarities(color: ResourceColor) {
 function convertOverflowAmount(fromColor: ResourceColor, toColor: ResourceColor, amount: number) {
   const fromIndex = rarityFallbackOrder.indexOf(fromColor)
   const toIndex = rarityFallbackOrder.indexOf(toColor)
-  if (fromIndex < 0 || toIndex < 0 || toIndex <= fromIndex) return amount
-  return amount * 3 ** (toIndex - fromIndex)
+  if (fromIndex < 0 || toIndex < 0) return amount
+  if (toIndex === fromIndex) return amount
+  if (toIndex > fromIndex) return amount * 3 ** (toIndex - fromIndex)
+  return amount / 3 ** (fromIndex - toIndex)
 }
 
-function applyProgressWithOverflow(schedule: ScheduleItem[], id: string, amount: number) {
+function formatProgressAmount(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '')
+}
+
+function getConversionRarities(color: ResourceColor) {
+  const colorIndex = rarityFallbackOrder.indexOf(color)
+  if (colorIndex < 0) return [color]
+
+  return [
+    ...rarityFallbackOrder.slice(colorIndex),
+    ...rarityFallbackOrder.slice(0, colorIndex).reverse(),
+  ]
+}
+
+function applyConvertedProgress(
+  schedule: ScheduleItem[],
+  sourceItem: ScheduleItem,
+  sourceColor: ResourceColor,
+  amount: number,
+) {
+  let remainingAmount = amount
+  let previousColor = sourceColor
+  let didApply = false
+  const conversionColors = getConversionRarities(sourceColor)
+
+  conversionColors.forEach((color) => {
+    if (remainingAmount <= 0) return
+
+    const convertedAmount = convertOverflowAmount(previousColor, color, remainingAmount)
+    if (convertedAmount <= 0) {
+      remainingAmount = 0
+      previousColor = color
+      return
+    }
+
+    const targetItem = schedule.find(
+      (item) =>
+        item.category === sourceItem.category &&
+        item.farmLevel === sourceItem.farmLevel &&
+        item.color === color &&
+        item.progress < item.target,
+    )
+    if (!targetItem) {
+      remainingAmount = convertedAmount
+      previousColor = color
+      return
+    }
+
+    const capacity = targetItem.target - targetItem.progress
+    const appliedAmount = Math.min(capacity, convertedAmount)
+    targetItem.progress += appliedAmount
+    didApply = didApply || appliedAmount > 0
+    remainingAmount = Math.max(0, convertedAmount - appliedAmount)
+    previousColor = color
+  })
+
+  return didApply
+}
+
+function applyProgressWithOverflow(schedule: ScheduleItem[], id: string, amount: number, includeStageRewards = false) {
   const sourceItem = schedule.find((item) => item.id === id)
   if (!sourceItem) return { didApply: false, nextSchedule: schedule }
 
@@ -166,34 +239,14 @@ function applyProgressWithOverflow(schedule: ScheduleItem[], id: string, amount:
     }
   }
 
-  let remainingAmount = amount
-  let previousColor = sourceItem.color
-  let didApply = false
-  const fallbackColors = getFallbackRarities(sourceItem.color)
+  const rewardColors = includeStageRewards ? getFallbackRarities(sourceItem.color) : [sourceItem.color]
   const nextSchedule = schedule.map((item) => ({ ...item }))
+  const reward = farmingRewards[sourceItem.category]?.[sourceItem.farmLevel as FarmingLevel]
+  let didApply = false
 
-  fallbackColors.forEach((color) => {
-    if (remainingAmount <= 0) return
-
-    const targetItem = nextSchedule.find(
-      (item) =>
-        item.category === sourceItem.category &&
-        item.farmLevel === sourceItem.farmLevel &&
-        item.color === color &&
-        item.progress < item.target,
-    )
-    if (!targetItem) {
-      previousColor = color
-      return
-    }
-
-    const convertedAmount = convertOverflowAmount(previousColor, color, remainingAmount)
-    const capacity = targetItem.target - targetItem.progress
-    const appliedAmount = Math.min(capacity, convertedAmount)
-    targetItem.progress += appliedAmount
-    didApply = didApply || appliedAmount > 0
-    remainingAmount = Math.max(0, convertedAmount - appliedAmount)
-    previousColor = color
+  rewardColors.forEach((color) => {
+    const rewardAmount = color === sourceItem.color ? amount : reward?.[color] ?? 0
+    didApply = rewardAmount > 0 && applyConvertedProgress(nextSchedule, sourceItem, color, rewardAmount) || didApply
   })
 
   return { didApply, nextSchedule }
@@ -656,7 +709,7 @@ type ScheduleViewProps = {
   onSave: () => void
   onSetup: () => void
   onTargetEdit: (id: string) => void
-  onUpdateProgress: (id: string, amount: number) => void
+  onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
 }
 
 const ScheduleView = memo(function ScheduleView({
@@ -713,13 +766,13 @@ type ScheduleCardProps = {
   item: ScheduleItem
   onRemove: (id: string) => void
   onTargetEdit: (id: string) => void
-  onUpdateProgress: (id: string, amount: number) => void
+  onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
 }
 
 const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, onUpdateProgress }: ScheduleCardProps) {
   const progressPercent = item.target === 0 ? 100 : Math.min(100, Math.round((item.progress / item.target) * 100))
   const farmRewardAmount = getFarmRewardAmount(item)
-  const canAddProgress = farmRewardAmount > 0
+  const canAddProgress = canUseFarmAddButton(item)
   const progressUnitLabel = item.progressUnit === 'farm' ? ' farm' : ''
 
   return (
@@ -735,12 +788,12 @@ const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, 
         <span style={{ width: `${progressPercent}%` }} />
       </div>
       <div className="farming-card__footer">
-        <span>{item.progress} / {item.target}{progressUnitLabel}</span>
+        <span>{formatProgressAmount(item.progress)} / {item.target}{progressUnitLabel}</span>
         {canAddProgress && (
           <>
             <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, 1)}>+1</button>
             {item.progressUnit !== 'farm' && (
-              <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, farmRewardAmount)}>+Custom ({farmRewardAmount})</button>
+              <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, farmRewardAmount, true)}>+Custom ({farmRewardAmount})</button>
             )}
           </>
         )}
@@ -853,11 +906,11 @@ export function DailyScheduleContent() {
     setMessage('Target added.')
   }, [manualSelection.category, manualSelection.farmLevel, manualSelection.target, selectedColor])
 
-  const updateProgress = useCallback((id: string, amount: number) => {
+  const updateProgress = useCallback((id: string, amount: number, includeStageRewards = false) => {
     let isCompleted = false
 
     setSchedule((current) => {
-      const { didApply, nextSchedule } = applyProgressWithOverflow(current, id, amount)
+      const { didApply, nextSchedule } = applyProgressWithOverflow(current, id, amount, includeStageRewards)
       isCompleted = !didApply
       return nextSchedule
     })
