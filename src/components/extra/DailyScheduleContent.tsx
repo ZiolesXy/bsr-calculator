@@ -5,12 +5,13 @@ import {
   totalPlannerWeaponPreset,
 } from '../../context/AppStateContext'
 import characterPack from '../../data/character-pack.json'
+import defaultSettings from '../../data/default-settings.json'
 import farmingRewards from '../../data/farming-rewards.json'
 import { useCharacterCalculator } from '../../hooks/useCharacterCalculator'
 import { useSkillCalculator } from '../../hooks/useSkillCalculator'
 import { useWeaponCalculator } from '../../hooks/useWeaponCalculator'
 import type { CharacterState, ResourceColor, SkillState, WeaponState } from '../../types'
-import { levelMilestones, materialModes, skillLevels } from '../../utils/calculator'
+import { levelMilestones, skillLevels } from '../../utils/calculator'
 import { PillInput } from '../common/PillInput'
 import { SelectField } from '../common/SelectField'
 
@@ -25,6 +26,7 @@ type ScheduleItem = {
   farmLevel: string
   id: string
   name: string
+  progressUnit?: 'item' | 'farm'
   source: string
   target: number
   progress: number
@@ -80,6 +82,10 @@ function createItemId(category: FarmingCategory, farmLevel: string, color: Resou
   return `${category}_${farmLevel}_${color}`
 }
 
+function createFarmItemId(category: FarmingCategory, farmLevel: string) {
+  return `${category}_${farmLevel}_farm`
+}
+
 function createScheduleItem(category: FarmingCategory, farmLevel: string, color: ResourceColor, target: number, progress = 0): ScheduleItem {
   const reward = farmingRewards[category][farmLevel as FarmingLevel]
   const rewardAmount = reward[color] ?? 0
@@ -96,6 +102,31 @@ function createScheduleItem(category: FarmingCategory, farmLevel: string, color:
   }
 }
 
+function calculateRewardExp(category: 'book' | 'tamahagane', farmLevel: string) {
+  const reward = farmingRewards[category][farmLevel as FarmingLevel]
+  const values = category === 'book' ? defaultSettings.books : defaultSettings.weapon.tamahaganeExp
+
+  return resourceColors.reduce((total, color) => total + (reward[color] ?? 0) * values[color], 0)
+}
+
+function createExpFarmScheduleItem(category: 'book' | 'tamahagane', farmLevel: string, missingExp: number): ScheduleItem | null {
+  const reward = farmingRewards[category][farmLevel as FarmingLevel]
+  const expPerFarm = calculateRewardExp(category, farmLevel)
+  if (missingExp <= 0 || expPerFarm <= 0) return null
+
+  return {
+    category,
+    color: 'yellow',
+    farmLevel,
+    id: createFarmItemId(category, farmLevel),
+    name: `${categoryLabels[category]} farm`,
+    progressUnit: 'farm',
+    source: `${categoryLabels[category]} stage ${farmLevel} (${reward.stamina} stamina, avg ${expPerFarm} EXP/farm)`,
+    target: Math.ceil(missingExp / expPerFarm),
+    progress: 0,
+  }
+}
+
 function parseScheduleItemId(id: string) {
   const [category, farmLevel, color] = id.split('_') as [FarmingCategory | undefined, string | undefined, ResourceColor | undefined]
   if (!category || !farmLevel || !color || !farmingRewards[category]?.[farmLevel as FarmingLevel]) return null
@@ -103,6 +134,8 @@ function parseScheduleItemId(id: string) {
 }
 
 function getFarmRewardAmount(item: ScheduleItem) {
+  if (item.progressUnit === 'farm') return 1
+
   const reward = farmingRewards[item.category]?.[item.farmLevel as FarmingLevel]
   return reward?.[item.color] ?? 0
 }
@@ -203,6 +236,21 @@ function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
     const farmLevel = String(item.farmLevel || parsedId?.farmLevel || '6')
 
     if (farmingRewards[category]?.[farmLevel as FarmingLevel]) {
+      if ((item.progressUnit === 'farm' || String(item.id).endsWith('_farm')) && (category === 'book' || category === 'tamahagane')) {
+        const expFarmItem = createExpFarmScheduleItem(
+          category,
+          farmLevel,
+          normalizeAmount(String(item.target), 0) * calculateRewardExp(category, farmLevel),
+        )
+        return expFarmItem
+          ? {
+              ...expFarmItem,
+              target: normalizeAmount(String(item.target), expFarmItem.target),
+              progress: normalizeAmount(String(item.progress), 0),
+            }
+          : createScheduleItem(category, farmLevel, color, normalizeAmount(String(item.target), 0), normalizeAmount(String(item.progress), 0))
+      }
+
       return createScheduleItem(
         category,
         farmLevel,
@@ -425,7 +473,6 @@ const CharacterPlannerInputs = memo(function CharacterPlannerInputs({ state, onC
       <div className="control-grid">
         <SelectField label="Current level" value={state.current} options={levelMilestones.slice(0, -1)} onChange={(value) => onChange((prev) => ({ ...prev, current: Number(value) }))} />
         <SelectField label="Target level" value={state.target} options={levelMilestones.slice(1)} onChange={(value) => onChange((prev) => ({ ...prev, target: Number(value) }))} />
-        <SelectField label="Book mode" value={state.bookMode} options={materialModes} onChange={(value) => onChange((prev) => ({ ...prev, bookMode: value as typeof prev.bookMode }))} />
       </div>
       <div className="token-grid">
         <PillInput label="Green books" color="green" value={state.ownedBooks.green} onChange={(value) => onChange((prev) => ({ ...prev, ownedBooks: { ...prev.ownedBooks, green: value } }))} />
@@ -455,7 +502,6 @@ const WeaponPlannerInputs = memo(function WeaponPlannerInputs({ state, onChange 
       <div className="control-grid">
         <SelectField label="Current level" value={state.current} options={levelMilestones.slice(0, -1)} onChange={(value) => onChange((prev) => ({ ...prev, current: Number(value) }))} />
         <SelectField label="Target level" value={state.target} options={levelMilestones.slice(1)} onChange={(value) => onChange((prev) => ({ ...prev, target: Number(value) }))} />
-        <SelectField label="Tamahagane mode" value={state.tamahaganeMode} options={materialModes} onChange={(value) => onChange((prev) => ({ ...prev, tamahaganeMode: value as typeof prev.tamahaganeMode }))} />
       </div>
       <div className="token-grid">
         <PillInput label="Green tamahagane" color="green" value={state.ownedTamahagane.green} onChange={(value) => onChange((prev) => ({ ...prev, ownedTamahagane: { ...prev.ownedTamahagane, green: value } }))} />
@@ -674,6 +720,7 @@ const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, 
   const progressPercent = item.target === 0 ? 100 : Math.min(100, Math.round((item.progress / item.target) * 100))
   const farmRewardAmount = getFarmRewardAmount(item)
   const canAddProgress = farmRewardAmount > 0
+  const progressUnitLabel = item.progressUnit === 'farm' ? ' farm' : ''
 
   return (
     <article className="farming-card">
@@ -688,11 +735,13 @@ const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, 
         <span style={{ width: `${progressPercent}%` }} />
       </div>
       <div className="farming-card__footer">
-        <span>{item.progress} / {item.target}</span>
+        <span>{item.progress} / {item.target}{progressUnitLabel}</span>
         {canAddProgress && (
           <>
             <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, 1)}>+1</button>
-            <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, farmRewardAmount)}>+Custom ({farmRewardAmount})</button>
+            {item.progressUnit !== 'farm' && (
+              <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, farmRewardAmount)}>+Custom ({farmRewardAmount})</button>
+            )}
           </>
         )}
         <button type="button" className="mini-tab" onClick={() => onTargetEdit(item.id)}>Edit target</button>
@@ -844,10 +893,14 @@ export function DailyScheduleContent() {
     const character = characterPack.characters.find((entry) => entry.id === selectedCharacterId)
     if (!character) return
 
+    const expFarmItems = [
+      createExpFarmScheduleItem('book', characterFarmLevel, packCharacterResult.missingExp),
+      createExpFarmScheduleItem('tamahagane', characterFarmLevel, packWeaponResult.missingExp),
+    ].filter((item): item is ScheduleItem => item !== null)
+
     const generatedItems: ScheduleItem[] = [
-      ...getPositiveItems(packCharacterResult.recommendation.counts, resourceColors, (color, amount) => createScheduleItem('book', characterFarmLevel, color, amount)),
+      ...expFarmItems,
       ...getPositiveItems(packCharacterResult.essenceNeeded, threeStarColors, (color, amount) => createScheduleItem('essence', characterFarmLevel, color, amount)),
-      ...getPositiveItems(packWeaponResult.recommendation.counts, resourceColors, (color, amount) => createScheduleItem('tamahagane', characterFarmLevel, color, amount)),
       ...getPositiveItems(packWeaponResult.hammerNeeded, threeStarColors, (color, amount) => createScheduleItem('hammer', characterFarmLevel, color, amount)),
       ...getPositiveItems(packSkillResult.needed, threeStarColors, (color, amount) => createScheduleItem('art', characterFarmLevel, color, amount)),
       ...(packSkillResult.passiveMissingOmamori > 0 ? [createScheduleItem('omamori', characterFarmLevel, 'yellow', packSkillResult.passiveMissingOmamori)] : []),
@@ -858,11 +911,11 @@ export function DailyScheduleContent() {
     setMessage(`${character.name} pack generated.`)
   }, [
     packCharacterResult.essenceNeeded,
-    packCharacterResult.recommendation.counts,
+    packCharacterResult.missingExp,
     packSkillResult.needed,
     packSkillResult.passiveMissingOmamori,
     packWeaponResult.hammerNeeded,
-    packWeaponResult.recommendation.counts,
+    packWeaponResult.missingExp,
     selectedCharacterId,
     characterFarmLevel,
   ])
