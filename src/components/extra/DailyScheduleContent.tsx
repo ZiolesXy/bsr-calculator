@@ -1,4 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import {
   totalPlannerCharacterPreset,
   totalPlannerSkillPreset,
@@ -356,7 +358,7 @@ const EntryView = memo(function EntryView({ importInput, message, onImportClick,
             <strong>Load Data</strong>
           </button>
           <button type="button" className="mobile-menu__card" onClick={onImportClick}>
-            <small>Upload .txt</small>
+            <small>Upload</small>
             <strong>Import Data</strong>
           </button>
           <button type="button" className="mobile-menu__card" onClick={onSetup}>
@@ -740,8 +742,8 @@ const ScheduleView = memo(function ScheduleView({
           <button type="button" className="mini-tab" onClick={onReset}>Reset</button>
           <button type="button" className="mini-tab" onClick={onSave}>Save</button>
           <button type="button" className="mini-tab" onClick={onLoad}>Load</button>
-          <button type="button" className="mini-tab" onClick={onExport}>Export (.txt)</button>
-          <button type="button" className="mini-tab" onClick={onImportClick}>Import (.txt)</button>
+          <button type="button" className="mini-tab" onClick={onExport}>Export</button>
+          <button type="button" className="mini-tab" onClick={onImportClick}>Import</button>
           {importInput}
         </div>
         {message && <p className="farming-hint">{message}</p>}
@@ -881,7 +883,7 @@ export function DailyScheduleContent() {
       ref={importInputRef}
       className="visually-hidden"
       type="file"
-      accept=".txt,application/json,text/plain"
+      accept=".json,application/json"
       onChange={(event) => {
         const file = event.target.files?.[0]
         if (file) void importSchedule(file)
@@ -889,14 +891,34 @@ export function DailyScheduleContent() {
     />
   )
 
-  const exportSchedule = useCallback(() => {
-    const blob = new Blob([JSON.stringify(createStoredSchedule(schedule), null, 2)], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'daily-farming-schedule.txt'
-    link.click()
-    URL.revokeObjectURL(url)
+  const exportSchedule = useCallback(async () => {
+    try {
+      const data = JSON.stringify(createStoredSchedule(schedule), null, 2)
+
+      if (Capacitor.isNativePlatform()) {
+        await Filesystem.writeFile({
+          path: `schedule-${Date.now()}.json`,
+          data,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8,
+        })
+        window.alert('Export berhasil')
+        return
+      }
+
+      const blob = new Blob([data], { type: 'application/json;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      try {
+        const link = document.createElement('a')
+        link.href = url
+        link.download = 'schedule.json'
+        link.click()
+      } finally {
+        URL.revokeObjectURL(url)
+      }
+    } catch {
+      window.alert('Export failed.')
+    }
   }, [schedule])
 
   const generateManualSchedule = useCallback(() => {

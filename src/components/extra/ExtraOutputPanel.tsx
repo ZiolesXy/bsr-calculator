@@ -59,7 +59,7 @@ export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, tot
       {activeExtraTab === 'daily-schedule' && (
         <>
           <StatCard label="Storage" value="Local" />
-          <StatCard label="Import / Export" value=".txt JSON" />
+          <StatCard label="Import / Export" value=".json" />
           <StatCard label="Progress Reset" value="Manual" />
         </>
       )}
