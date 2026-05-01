@@ -1,11 +1,16 @@
 {
-  "books": { "green": 500, "blue": 3000, "purple": 10000, "yellow": 20000 },
+  "books": {
+    "green": 500,
+    "blue": 3000,
+    "purple": 10000,
+    "yellow": 20000
+  },
   "essences": {
-    "20-30": { "green": 0, "blue": 6, "purple": 0 },
-    "30-40": { "green": 0, "blue": 12, "purple": 0 },
-    "40-50": { "green": 6, "blue": 0, "purple": 0 },
-    "50-60": { "green": 10, "blue": 0, "purple": 0 },
-    "60-70": { "green": 14, "blue": 0, "purple": 0 },
+    "20-30": { "green": 6, "blue": 0, "purple": 0 },
+    "30-40": { "green": 12, "blue": 0, "purple": 0 },
+    "40-50": { "green": 0, "blue": 6, "purple": 0 },
+    "50-60": { "green": 0, "blue": 10, "purple": 0 },
+    "60-70": { "green": 0, "blue": 14, "purple": 0 },
     "70-80": { "green": 0, "blue": 0, "purple": 6 },
     "80-90": { "green": 0, "blue": 0, "purple": 7 },
     "90-100": { "green": 0, "blue": 0, "purple": 8 }
@@ -35,7 +40,12 @@
     }
   },
   "weapon": {
-    "tamahaganeExp": { "green": 100, "blue": 600, "purple": 2000, "yellow": 4000 },
+    "tamahaganeExp": {
+      "green": 500,
+      "blue": 2000,
+      "purple": 5000,
+      "yellow": 10000
+    },
     "tamahaganeXpCosts": {
       "1-20": 19120,
       "20-30": 33876,
@@ -48,11 +58,11 @@
       "90-100": 636384
     },
     "hammers": {
-      "20-30": { "green": 0, "blue": 6, "purple": 0 },
-      "30-40": { "green": 0, "blue": 12, "purple": 0 },
-      "40-50": { "green": 6, "blue": 0, "purple": 0 },
-      "50-60": { "green": 10, "blue": 0, "purple": 0 },
-      "60-70": { "green": 14, "blue": 0, "purple": 0 },
+      "20-30": { "green": 6, "blue": 0, "purple": 0 },
+      "30-40": { "green": 12, "blue": 0, "purple": 0 },
+      "40-50": { "green": 0, "blue": 6, "purple": 0 },
+      "50-60": { "green": 0, "blue": 10, "purple": 0 },
+      "60-70": { "green": 0, "blue": 14, "purple": 0 },
       "70-80": { "green": 0, "blue": 0, "purple": 6 },
       "80-90": { "green": 0, "blue": 0, "purple": 7 },
       "90-100": { "green": 0, "blue": 0, "purple": 8 }
@@ -96,7 +106,7 @@
   "passives": {
     "passive1": {
       "1": { "omamori": 2, "kans": 6000 },
-      "2": { "omamori": 8, "kans": 19000 },
+      "2": { "omamori": 8, "kans": 21500 },
       "3": { "omamori": 14, "kans": 70000 }
     },
     "passive2": {

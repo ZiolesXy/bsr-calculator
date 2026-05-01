@@ -425,6 +425,31 @@
   color: var(--text-secondary);
 }
 
+.farming-export-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.9rem;
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--brand-soft), var(--surface-primary));
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--border-color));
+}
+
+.farming-export-actions div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.farming-export-actions strong {
+  color: var(--text-primary);
+}
+
+.farming-export-actions span {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
 .farming-list {
   display: grid;
   gap: 0.85rem;

@@ -39,6 +39,11 @@ type StoredSchedule = {
   lastUpdated: string
 }
 
+type ExportResult = {
+  data: string
+  fileName: string
+} | null
+
 type ManualSelection = {
   category: FarmingCategory
   color: ResourceColor
@@ -699,9 +704,11 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
 })
 
 type ScheduleViewProps = {
+  exportResult: ExportResult
   importInput: React.ReactNode
   message: string
   schedule: ScheduleItem[]
+  onCloseExportResult: () => void
   onEntry: () => void
   onExport: () => void
   onImportClick: () => void
@@ -712,12 +719,15 @@ type ScheduleViewProps = {
   onSetup: () => void
   onTargetEdit: (id: string) => void
   onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
+  onShareExport: () => void
 }
 
 const ScheduleView = memo(function ScheduleView({
+  exportResult,
   importInput,
   message,
   schedule,
+  onCloseExportResult,
   onEntry,
   onExport,
   onImportClick,
@@ -728,6 +738,7 @@ const ScheduleView = memo(function ScheduleView({
   onSetup,
   onTargetEdit,
   onUpdateProgress,
+  onShareExport,
 }: ScheduleViewProps) {
   return (
     <div className="overview-stack">
@@ -747,6 +758,18 @@ const ScheduleView = memo(function ScheduleView({
           {importInput}
         </div>
         {message && <p className="farming-hint">{message}</p>}
+        {exportResult && (
+          <div className="farming-export-actions" role="status">
+            <div>
+              <strong>File disimpan di internal</strong>
+              <span>{exportResult.fileName}</span>
+            </div>
+            <div className="farming-actions">
+              <button type="button" className="mini-tab is-active" onClick={onShareExport}>Share</button>
+              <button type="button" className="mini-tab" onClick={onCloseExportResult}>OK</button>
+            </div>
+          </div>
+        )}
         <div className="farming-list">
           {schedule.length === 0 && <div className="coming-soon">Belum ada target farming.</div>}
           {schedule.map((item) => (
@@ -821,6 +844,7 @@ export function DailyScheduleContent() {
   const [packWeaponState, setPackWeaponState] = useState(totalPlannerWeaponPreset)
   const [packSkillState, setPackSkillState] = useState(totalPlannerSkillPreset)
   const [message, setMessage] = useState('')
+  const [exportResult, setExportResult] = useState<ExportResult>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
 
   const packCharacterResult = useCharacterCalculator(packCharacterState)
@@ -896,13 +920,15 @@ export function DailyScheduleContent() {
       const data = JSON.stringify(createStoredSchedule(schedule), null, 2)
 
       if (Capacitor.isNativePlatform()) {
+        const fileName = `schedule-${Date.now()}.json`
         await Filesystem.writeFile({
-          path: `schedule-${Date.now()}.json`,
+          path: fileName,
           data,
           directory: Directory.Documents,
           encoding: Encoding.UTF8,
         })
-        window.alert('Export berhasil')
+        setExportResult({ data, fileName })
+        setMessage('File disimpan di internal.')
         return
       }
 
@@ -920,6 +946,36 @@ export function DailyScheduleContent() {
       window.alert('Export failed.')
     }
   }, [schedule])
+
+  const shareExport = useCallback(async () => {
+    if (!exportResult) return
+
+    const file = new File([exportResult.data], exportResult.fileName, { type: 'application/json' })
+    const sharePayload: ShareData = {
+      files: [file],
+      title: 'Daily Schedule',
+      text: 'BSR Daily Schedule export',
+    }
+
+    try {
+      if (navigator.canShare?.(sharePayload)) {
+        await navigator.share(sharePayload)
+        return
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Daily Schedule',
+          text: exportResult.data,
+        })
+        return
+      }
+
+      setMessage('Share tidak didukung di perangkat ini.')
+    } catch {
+      setMessage('Share dibatalkan atau gagal.')
+    }
+  }, [exportResult])
 
   const generateManualSchedule = useCallback(() => {
     const item = createScheduleItem(manualSelection.category, manualSelection.farmLevel, selectedColor, manualSelection.target, 0)
@@ -1036,9 +1092,11 @@ export function DailyScheduleContent() {
     case 'schedule':
       return (
         <ScheduleView
+          exportResult={exportResult}
           importInput={importInput}
           message={message}
           schedule={schedule}
+          onCloseExportResult={() => setExportResult(null)}
           onEntry={goToEntry}
           onExport={exportSchedule}
           onImportClick={openImportDialog}
@@ -1049,6 +1107,7 @@ export function DailyScheduleContent() {
           onSetup={goToSetup}
           onTargetEdit={editTarget}
           onUpdateProgress={updateProgress}
+          onShareExport={shareExport}
         />
       )
   }
