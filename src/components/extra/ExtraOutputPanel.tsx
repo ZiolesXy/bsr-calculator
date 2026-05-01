@@ -56,6 +56,13 @@ export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, tot
           <StatCard label="Tamahagane Extra EXP" value={formatNumber(weapon.recommendation.overshoot)} />
         </>
       )}
+      {activeExtraTab === 'daily-schedule' && (
+        <>
+          <StatCard label="Storage" value="Local" />
+          <StatCard label="Import / Export" value=".txt JSON" />
+          <StatCard label="Progress Reset" value="Manual" />
+        </>
+      )}
     </section>
   )
 }

@@ -29,11 +29,13 @@ const tabs: Array<TabDefinition<TabId>> = [
 const extraTabs: Array<TabDefinition<ExtraTabId>> = [
   { id: 'total-planner', label: 'Total Planner', eyebrow: 'All-in-one inputs' },
   { id: 'overview', label: 'Overview', eyebrow: 'Combined summary' },
+  { id: 'daily-schedule', label: 'Daily Schedule', eyebrow: 'Farming tracker' },
 ]
 
 function AppLayout() {
   const [activeTab, setActiveTab] = useState<TabId>('character')
   const [activeExtraTab, setActiveExtraTab] = useState<ExtraTabId>('total-planner')
+  const [mobileExtraScreen, setMobileExtraScreen] = useState<'menu' | 'page'>('menu')
   const [isExtraLoading, setIsExtraLoading] = useState(false)
   const { themeCatalog, activeTheme, setThemeId } = useTheme()
   const { isMobile, mobileScreen, setMobileScreen, showMobilePage } = useResponsive()
@@ -41,7 +43,7 @@ function AppLayout() {
   useTotalPlannerInit(activeTab, activeExtraTab)
 
   useEffect(() => {
-    if (activeTab !== 'extra' || activeExtraTab !== 'total-planner') {
+    if (activeTab !== 'extra' || activeExtraTab !== 'total-planner' || (isMobile && mobileExtraScreen !== 'page')) {
       setIsExtraLoading(false)
       return
     }
@@ -49,11 +51,14 @@ function AppLayout() {
     setIsExtraLoading(true)
     const timer = window.setTimeout(() => setIsExtraLoading(false), 180)
     return () => window.clearTimeout(timer)
-  }, [activeExtraTab, activeTab])
+  }, [activeExtraTab, activeTab, isMobile, mobileExtraScreen])
 
   const openTab = useCallback((tabId: TabId) => {
     startTransition(() => {
       setActiveTab(tabId)
+      if (tabId === 'extra') {
+        setMobileExtraScreen('menu')
+      }
     })
     if (isMobile) {
       setMobileScreen('page')
@@ -62,9 +67,27 @@ function AppLayout() {
   }, [isMobile, setMobileScreen])
 
   const currentLabel = useMemo(() => tabs.find((tab) => tab.id === activeTab)?.label ?? '', [activeTab])
-  const handleBackToMenu = useCallback(() => setMobileScreen('menu'), [setMobileScreen])
+  const activeExtraLabel = useMemo(
+    () => extraTabs.find((tab) => tab.id === activeExtraTab)?.label ?? '',
+    [activeExtraTab],
+  )
+  const handleBackToMenu = useCallback(() => {
+    if (isMobile && activeTab === 'extra' && mobileExtraScreen === 'page') {
+      setMobileExtraScreen('menu')
+      return
+    }
+
+    setMobileScreen('menu')
+  }, [activeTab, isMobile, mobileExtraScreen, setMobileScreen])
+  const openExtraTab = useCallback((tabId: ExtraTabId) => {
+    startTransition(() => setActiveExtraTab(tabId))
+    if (isMobile) {
+      setMobileExtraScreen('page')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [isMobile])
   const activeTabContent = useMemo(() => {
-    if (activeTab === 'extra' && activeExtraTab === 'total-planner' && isExtraLoading) {
+    if (activeTab === 'extra' && activeExtraTab === 'total-planner' && isExtraLoading && (!isMobile || mobileExtraScreen === 'page')) {
       return (
         <>
           <section className="panel panel--wide extra-loading">
@@ -86,24 +109,46 @@ function AppLayout() {
     if (activeTab === 'weapon') return <WeaponTab />
     if (activeTab === 'skill') return <SkillTab />
     if (activeTab === 'extra') {
+      if (isMobile && mobileExtraScreen === 'menu') {
+        return (
+          <section className="mobile-menu panel panel--wide">
+            <div className="panel__header">
+              <div>
+                <p className="section-tag">Extra</p>
+                <h2>Pilih tools extra</h2>
+              </div>
+            </div>
+            <div className="mobile-menu__grid">
+              {extraTabs.map((tab) => (
+                <button key={tab.id} type="button" className="mobile-menu__card" onClick={() => openExtraTab(tab.id)}>
+                  <small>{tab.eyebrow}</small>
+                  <strong>{tab.label}</strong>
+                </button>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
       return (
         <ExtraTab
           activeExtraTab={activeExtraTab}
-          onExtraTabChange={(tabId) => startTransition(() => setActiveExtraTab(tabId))}
+          onExtraTabChange={openExtraTab}
           extraTabs={extraTabs}
+          showExtraTabNavigation={!isMobile}
         />
       )
     }
 
     return <SettingsTab themes={themeCatalog} activeTheme={activeTheme} onThemeChange={setThemeId} />
-  }, [activeExtraTab, activeTab, activeTheme, isExtraLoading, setThemeId, themeCatalog])
+  }, [activeExtraTab, activeTab, activeTheme, isExtraLoading, isMobile, mobileExtraScreen, openExtraTab, setThemeId, themeCatalog])
 
   return (
     <div className="app-shell">
       <header className="hero-panel">
         <div>
           <p className="hero-panel__eyebrow">BSR Resource Planner</p>
-          <h1>Build modern progress calculators from your saved data.</h1>
+          <h1>Build modern progress calculators materials from your saved data.</h1>
         </div>
       </header>
 
@@ -113,7 +158,13 @@ function AppLayout() {
 
       {showMobilePage && (
         <main className={`content-grid ${isMobile ? 'content-grid--mobile' : ''}`}>
-          {isMobile && <MobileBackbar currentLabel={currentLabel} onBack={handleBackToMenu} />}
+          {isMobile && (
+            <MobileBackbar
+              backLabel={activeTab === 'extra' && mobileExtraScreen === 'page' ? 'Back to Extra' : 'Back to main menu'}
+              currentLabel={activeTab === 'extra' && mobileExtraScreen === 'page' ? activeExtraLabel : currentLabel}
+              onBack={handleBackToMenu}
+            />
+          )}
           {activeTabContent}
         </main>
       )}

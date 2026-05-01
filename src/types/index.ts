@@ -1,6 +1,6 @@
 export type TabId = 'character' | 'weapon' | 'skill' | 'extra' | 'settings'
 export type SettingsTabId = 'theme'
-export type ExtraTabId = 'total-planner' | 'overview'
+export type ExtraTabId = 'total-planner' | 'overview' | 'daily-schedule'
 
 export type ResourceColor = 'green' | 'blue' | 'purple' | 'yellow'
 export type ThreeColor = 'green' | 'blue' | 'purple'

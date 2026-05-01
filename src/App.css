@@ -298,9 +298,16 @@
 }
 
 .mini-tab-bar {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(12rem, 1fr));
   gap: 0.75rem;
   margin-bottom: 1.2rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.mini-tab-bar .mini-tab {
+  min-width: 12rem;
 }
 
 .theme-grid {
@@ -400,6 +407,91 @@
   border: 1px dashed color-mix(in srgb, var(--brand) 35%, var(--border-color));
 }
 
+.farming-actions,
+.farming-toolbar,
+.farming-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.farming-actions {
+  align-content: end;
+}
+
+.farming-hint {
+  margin: 0.9rem 0 0;
+  color: var(--text-secondary);
+}
+
+.farming-list {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.farming-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.farming-custom-progress {
+  max-width: 14rem;
+  margin-top: 1rem;
+}
+
+.farming-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--surface-primary), rgba(0, 0, 0, 0));
+  border: 1px solid var(--border-color);
+}
+
+.farming-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.farming-card__header strong {
+  display: block;
+  color: var(--text-primary);
+}
+
+.farming-card__header span,
+.farming-card__footer span {
+  color: var(--text-secondary);
+}
+
+.farming-progress {
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.farming-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand), var(--surface-accent));
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .extra-loading {
   display: grid;
   gap: 0.85rem;
@@ -448,9 +540,18 @@ button {
   .toggle-grid,
   .token-grid,
   .control-grid,
+  .farming-choice-grid,
   .passive-grid,
   .overview-inline-stats {
     grid-template-columns: 1fr;
+  }
+
+  .mini-tab-bar {
+    overflow-x: visible;
+  }
+
+  .mini-tab-bar .mini-tab {
+    min-width: 0;
   }
 
   .mobile-backbar {

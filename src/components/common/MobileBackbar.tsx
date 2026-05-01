@@ -1,15 +1,16 @@
 import { memo } from 'react'
 
 type MobileBackbarProps = {
+  backLabel?: string
   currentLabel: string
   onBack: () => void
 }
 
-function MobileBackbarComponent({ currentLabel, onBack }: MobileBackbarProps) {
+function MobileBackbarComponent({ backLabel = 'Back to main menu', currentLabel, onBack }: MobileBackbarProps) {
   return (
     <section className="mobile-backbar panel panel--wide">
       <button type="button" className="mobile-backbar__button" onClick={onBack}>
-        Back to main menu
+        {backLabel}
       </button>
       <div>
         <p className="section-tag">Current Page</p>

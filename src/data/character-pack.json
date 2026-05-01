@@ -1,0 +1,9 @@
+{
+  "characters": [
+    {
+      "id": "character",
+      "name": "Character",
+      "description": "Generate farming schedule from Total Planner style inputs."
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import { useSkillCalculator } from '../../hooks/useSkillCalculator'
 import { useWeaponCalculator } from '../../hooks/useWeaponCalculator'
 import type { ExtraTabId, TabDefinition } from '../../types'
 import { TabNavigation } from '../common/TabNavigation'
+import { DailyScheduleContent } from './DailyScheduleContent'
 import { ExtraOutputPanel } from './ExtraOutputPanel'
 import { ExtraOverviewContent } from './ExtraOverviewContent'
 import { ExtraTotalPlannerContent } from './ExtraTotalPlannerContent'
@@ -13,6 +14,7 @@ type ExtraTabProps = {
   activeExtraTab: ExtraTabId
   onExtraTabChange: (tabId: ExtraTabId) => void
   extraTabs: Array<TabDefinition<ExtraTabId>>
+  showExtraTabNavigation?: boolean
 }
 
 export function ExtraTab(props: ExtraTabProps) {
@@ -44,6 +46,10 @@ export function ExtraTab(props: ExtraTabProps) {
       return <ExtraTotalPlannerContent />
     }
 
+    if (props.activeExtraTab === 'daily-schedule') {
+      return <DailyScheduleContent />
+    }
+
     return <ExtraOverviewContent character={character} weapon={weapon} skill={skill} />
   }, [character, props.activeExtraTab, skill, weapon])
 
@@ -57,7 +63,9 @@ export function ExtraTab(props: ExtraTabProps) {
           </div>
         </div>
 
-        <TabNavigation tabs={props.extraTabs} activeTab={props.activeExtraTab} onChange={props.onExtraTabChange} className="mini-tab-bar" />
+        {props.showExtraTabNavigation !== false && (
+          <TabNavigation tabs={props.extraTabs} activeTab={props.activeExtraTab} onChange={props.onExtraTabChange} className="mini-tab-bar" />
+        )}
 
         {activeContent}
       </section>
