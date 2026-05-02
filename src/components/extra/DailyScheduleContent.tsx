@@ -742,6 +742,8 @@ const ScheduleView = memo(function ScheduleView({
   onUpdateProgress,
   onShareExport,
 }: ScheduleViewProps) {
+  const exportDate = new Date().toISOString().split('T')[0]
+
   return (
     <div className="overview-stack">
       <section className="overview-block">
@@ -765,7 +767,7 @@ const ScheduleView = memo(function ScheduleView({
             <div>
               <strong>File disimpan di internal</strong>
               <span>{exportResult.fileName}</span>
-              {isMobileView && <span>Lokasi export: Documents/{exportResult.fileName}</span>}
+              {isMobileView && <span>Lokasi export: Documents/bsr-calc/Exports/{exportDate}/{exportResult.fileName}</span>}
             </div>
             <div className="farming-actions">
               {!isMobileView && (
