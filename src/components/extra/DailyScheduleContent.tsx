@@ -707,6 +707,7 @@ type ScheduleViewProps = {
   exportResult: ExportResult
   importInput: React.ReactNode
   message: string
+  isMobileView: boolean
   schedule: ScheduleItem[]
   onCloseExportResult: () => void
   onEntry: () => void
@@ -726,6 +727,7 @@ const ScheduleView = memo(function ScheduleView({
   exportResult,
   importInput,
   message,
+  isMobileView,
   schedule,
   onCloseExportResult,
   onEntry,
@@ -763,9 +765,12 @@ const ScheduleView = memo(function ScheduleView({
             <div>
               <strong>File disimpan di internal</strong>
               <span>{exportResult.fileName}</span>
+              {isMobileView && <span>Lokasi export: Documents/{exportResult.fileName}</span>}
             </div>
             <div className="farming-actions">
-              <button type="button" className="mini-tab is-active" onClick={onShareExport}>Share</button>
+              {!isMobileView && (
+                <button type="button" className="mini-tab is-active" onClick={onShareExport}>Share</button>
+              )}
               <button type="button" className="mini-tab" onClick={onCloseExportResult}>OK</button>
             </div>
           </div>
@@ -830,6 +835,7 @@ const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, 
 
 export function DailyScheduleContent() {
   const [view, setView] = useState<DailyView>('entry')
+  const [isMobileView, setIsMobileView] = useState(false)
   const [setupMode, setSetupMode] = useState<SetupMode>('manual')
   const [manualSelection, setManualSelection] = useState<ManualSelection>({
     category: 'book',
@@ -868,6 +874,16 @@ export function DailyScheduleContent() {
       return { ...current, color: nextColor, farmLevel: nextLevel }
     })
   }, [availableColors, availableLevels])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 960px)')
+    const updateMobileView = () => setIsMobileView(mediaQuery.matches)
+
+    updateMobileView()
+    mediaQuery.addEventListener('change', updateMobileView)
+
+    return () => mediaQuery.removeEventListener('change', updateMobileView)
+  }, [])
 
   const openImportDialog = useCallback(() => importInputRef.current?.click(), [])
   const goToEntry = useCallback(() => setView('entry'), [])
@@ -920,12 +936,14 @@ export function DailyScheduleContent() {
       const data = JSON.stringify(createStoredSchedule(schedule), null, 2)
 
       if (Capacitor.isNativePlatform()) {
-        const fileName = `schedule-${Date.now()}.json`
+        const date = new Date().toISOString().split('T')[0]
+        const fileName = `schadule-${Date.now()}.json`
         await Filesystem.writeFile({
-          path: fileName,
+          path: `bsr-calc/Exports/${date}/${fileName}` ,
           data,
           directory: Directory.Documents,
           encoding: Encoding.UTF8,
+          recursive: true,
         })
         setExportResult({ data, fileName })
         setMessage('File disimpan di internal.')
@@ -1095,6 +1113,7 @@ export function DailyScheduleContent() {
           exportResult={exportResult}
           importInput={importInput}
           message={message}
+          isMobileView={isMobileView}
           schedule={schedule}
           onCloseExportResult={() => setExportResult(null)}
           onEntry={goToEntry}
