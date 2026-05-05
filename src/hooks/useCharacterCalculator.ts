@@ -4,7 +4,6 @@ import {
   calculateCharacterExp,
   calculateOwnedExp,
   calculateRecommendedMaterials,
-  calculateThreeColorGreenEquivalent,
   sumRangeCosts,
 } from '../utils/calculator'
 
@@ -33,10 +32,6 @@ export function useCharacterCalculator(state: CharacterState) {
     },
     { green: 0, blue: 0, purple: 0 },
   )
-  const essenceTotalGreen = calculateThreeColorGreenEquivalent(essenceTotal)
-  const ownedEssenceGreen = calculateThreeColorGreenEquivalent(state.ownedEssences)
-  const missingEssenceGreen = Math.max(0, essenceTotalGreen - ownedEssenceGreen)
-
   return {
     bookValues,
     ownedExp,
@@ -46,12 +41,10 @@ export function useCharacterCalculator(state: CharacterState) {
     levelKans,
     ascensionKans,
     essenceTotal,
-    essenceTotalGreen,
-    ownedEssenceGreen,
     essenceNeeded: {
-      green: missingEssenceGreen,
-      blue: 0,
-      purple: 0,
+      green: Math.max(0, essenceTotal.green - state.ownedEssences.green),
+      blue: Math.max(0, essenceTotal.blue - state.ownedEssences.blue),
+      purple: Math.max(0, essenceTotal.purple - state.ownedEssences.purple),
     },
   }
 }

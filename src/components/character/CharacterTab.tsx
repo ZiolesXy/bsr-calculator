@@ -67,8 +67,8 @@ export function CharacterTab({ showOutput = true }: CharacterTabProps) {
           <StatCard label="Level Kans" value={formatNumber(result.levelKans)} />
           <StatCard label="Ascension Kans" value={formatNumber(result.ascensionKans)} />
           <StatCard
-            label="Need Essences (green value)"
-            value={formatNumber(result.essenceNeeded.green)}
+            label="Need Essences"
+            value={`${formatNumber(result.essenceNeeded.green)} / ${formatNumber(result.essenceNeeded.blue)} / ${formatNumber(result.essenceNeeded.purple)}`}
           />
         </section>
       )}

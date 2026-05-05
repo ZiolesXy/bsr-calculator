@@ -1,6 +1,6 @@
 import defaultSettings from '../data/default-settings.json'
 import type { WeaponState, ThreeColorCounts } from '../types'
-import { calculateOwnedExp, calculateRecommendedMaterials, calculateThreeColorGreenEquivalent, sumRangeCosts } from '../utils/calculator'
+import { calculateOwnedExp, calculateRecommendedMaterials, sumRangeCosts } from '../utils/calculator'
 
 const weaponXpCosts = defaultSettings.weapon.tamahaganeXpCosts
 const weaponAscensionKans = defaultSettings.weapon.ascensionKans
@@ -28,10 +28,6 @@ export function useWeaponCalculator(state: WeaponState) {
     },
     { green: 0, blue: 0, purple: 0 },
   )
-  const hammerTotalGreen = calculateThreeColorGreenEquivalent(hammerTotal)
-  const ownedHammerGreen = calculateThreeColorGreenEquivalent(state.ownedHammers)
-  const missingHammerGreen = Math.max(0, hammerTotalGreen - ownedHammerGreen)
-
   return {
     ownedExp,
     expRequired,
@@ -40,12 +36,10 @@ export function useWeaponCalculator(state: WeaponState) {
     gold,
     ascension,
     hammerTotal,
-    hammerTotalGreen,
-    ownedHammerGreen,
     hammerNeeded: {
-      green: missingHammerGreen,
-      blue: 0,
-      purple: 0,
+      green: Math.max(0, hammerTotal.green - state.ownedHammers.green),
+      blue: Math.max(0, hammerTotal.blue - state.ownedHammers.blue),
+      purple: Math.max(0, hammerTotal.purple - state.ownedHammers.purple),
     },
   }
 }

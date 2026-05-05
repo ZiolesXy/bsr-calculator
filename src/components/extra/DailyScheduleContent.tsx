@@ -279,8 +279,7 @@ function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
   }, [])
 }
 
-function createAutoConvertScheduleItem(category: 'art' | 'essence' | 'hammer', farmLevel: string, values: Record<'green' | 'blue' | 'purple', number>) {
-  const target = toGreenEquivalent(values)
+function createGreenValueScheduleItem(category: 'art' | 'essence' | 'hammer', farmLevel: string, target: number) {
   return target > 0 ? createScheduleItem(category, farmLevel, 'green', target) : null
 }
 
@@ -988,11 +987,14 @@ export function DailyScheduleContent() {
       createExpFarmScheduleItem('book', characterFarmLevel, packCharacterResult.missingExp),
       createExpFarmScheduleItem('tamahagane', characterFarmLevel, packWeaponResult.missingExp),
     ].filter((item): item is ScheduleItem => item !== null)
+    const missingEssenceGreen = Math.max(0, toGreenEquivalent(packCharacterResult.essenceTotal) - toGreenEquivalent(packCharacterState.ownedEssences))
+    const missingHammerGreen = Math.max(0, toGreenEquivalent(packWeaponResult.hammerTotal) - toGreenEquivalent(packWeaponState.ownedHammers))
+    const missingArtGreen = Math.max(0, toGreenEquivalent(packSkillResult.totals) - toGreenEquivalent(packSkillState.ownedArts))
 
     const autoConvertItems = [
-      createAutoConvertScheduleItem('essence', characterFarmLevel, packCharacterResult.essenceNeeded),
-      createAutoConvertScheduleItem('hammer', characterFarmLevel, packWeaponResult.hammerNeeded),
-      createAutoConvertScheduleItem('art', characterFarmLevel, packSkillResult.needed),
+      createGreenValueScheduleItem('essence', characterFarmLevel, missingEssenceGreen),
+      createGreenValueScheduleItem('hammer', characterFarmLevel, missingHammerGreen),
+      createGreenValueScheduleItem('art', characterFarmLevel, missingArtGreen),
     ].filter((item): item is ScheduleItem => item !== null)
 
     const generatedItems: ScheduleItem[] = [
@@ -1005,12 +1007,15 @@ export function DailyScheduleContent() {
     setView('schedule')
     setMessage(`${character.name} pack generated.`)
   }, [
-    packCharacterResult.essenceNeeded,
+    packCharacterResult.essenceTotal,
     packCharacterResult.missingExp,
-    packSkillResult.needed,
     packSkillResult.passiveMissingOmamori,
-    packWeaponResult.hammerNeeded,
+    packSkillResult.totals,
+    packCharacterState.ownedEssences,
+    packSkillState.ownedArts,
+    packWeaponResult.hammerTotal,
     packWeaponResult.missingExp,
+    packWeaponState.ownedHammers,
     selectedCharacterId,
     characterFarmLevel,
   ])

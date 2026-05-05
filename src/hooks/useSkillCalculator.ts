@@ -1,6 +1,6 @@
 import defaultSettings from '../data/default-settings.json'
 import type { PassiveResult, SkillState } from '../types'
-import { calculatePassiveTotals, calculateThreeColorGreenEquivalent, skillLevels } from '../utils/calculator'
+import { calculatePassiveTotals, skillLevels } from '../utils/calculator'
 
 const skillArtCosts = defaultSettings.skill.artCosts
 const passiveCosts = defaultSettings.passives
@@ -20,14 +20,10 @@ export function useSkillCalculator(state: SkillState) {
     { green: 0, blue: 0, purple: 0, kans: 0 },
   )
 
-  const totalArtGreen = calculateThreeColorGreenEquivalent(totals)
-  const ownedArtGreen = calculateThreeColorGreenEquivalent(state.ownedArts)
-  const missingArtGreen = Math.max(0, totalArtGreen - ownedArtGreen)
-
   const needed = {
-    green: missingArtGreen,
-    blue: 0,
-    purple: 0,
+    green: Math.max(0, totals.green - state.ownedArts.green),
+    blue: Math.max(0, totals.blue - state.ownedArts.blue),
+    purple: Math.max(0, totals.purple - state.ownedArts.purple),
   }
 
   const passiveResults = {
@@ -44,8 +40,6 @@ export function useSkillCalculator(state: SkillState) {
   return {
     skillMultiplier,
     totals,
-    totalArtGreen,
-    ownedArtGreen,
     needed,
     passiveResults,
     passiveTotalOmamori,

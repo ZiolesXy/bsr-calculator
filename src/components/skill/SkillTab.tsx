@@ -105,7 +105,9 @@ export function SkillTab({ showOutput = true }: SkillTabProps) {
         <section className="panel stats-panel">
           <p className="section-tag">Output</p>
           <StatCard label="Selected types" value={formatNumber(result.skillMultiplier)} />
-          <StatCard label="Need Arts (green value)" value={formatNumber(result.needed.green)} />
+          <StatCard label="Need green art" value={formatNumber(result.needed.green)} />
+          <StatCard label="Need blue art" value={formatNumber(result.needed.blue)} />
+          <StatCard label="Need purple art" value={formatNumber(result.needed.purple)} />
           <StatCard label="Total Kans" value={formatNumber(result.totals.kans)} />
           <StatCard label="Passive Omamori" value={formatNumber(result.passiveTotalOmamori)} />
           <StatCard label="Missing Omamori" value={formatNumber(result.passiveMissingOmamori)} />
