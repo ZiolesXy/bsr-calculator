@@ -1,5 +1,5 @@
 import expData from '../data/exp-data.json'
-import type { MaterialCounts, MaterialMode, PassiveResult, ResourceColor } from '../types'
+import type { MaterialCounts, MaterialMode, PassiveResult, ResourceColor, ThreeColorCounts } from '../types'
 
 export const levelMilestones = [1, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 export const skillLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -76,6 +76,10 @@ export function calculateOwnedExp(values: MaterialCounts, owned: MaterialCounts)
     owned.purple * values.purple +
     owned.yellow * values.yellow
   )
+}
+
+export function calculateThreeColorGreenEquivalent(values: ThreeColorCounts) {
+  return values.green + values.blue * 3 + values.purple * 9
 }
 
 export function calculateRecommendedMaterials(

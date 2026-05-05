@@ -28,7 +28,7 @@ type ScheduleItem = {
   farmLevel: string
   id: string
   name: string
-  progressUnit?: 'item' | 'farm'
+  progressUnit?: 'item' | 'value' | 'farm'
   source: string
   target: number
   progress: number
@@ -53,9 +53,7 @@ type ManualSelection = {
 
 const STORAGE_KEY = 'bsr-daily-farming-schedule'
 const resourceColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
-const threeStarColors = ['green', 'blue', 'purple'] as const
-const overflowCategories: FarmingCategory[] = ['art', 'essence', 'hammer']
-const rarityFallbackOrder: ResourceColor[] = ['purple', 'blue', 'green']
+const autoConvertCategories: FarmingCategory[] = ['art', 'essence', 'hammer']
 const skillTypes = ['basic', 'skill', 'counter', 'ultimate']
 
 const categoryLabels: Record<FarmingCategory, string> = {
@@ -93,19 +91,36 @@ function createFarmItemId(category: FarmingCategory, farmLevel: string) {
   return `${category}_${farmLevel}_farm`
 }
 
+function isAutoConvertCategory(category: FarmingCategory) {
+  return autoConvertCategories.includes(category)
+}
+
+function toGreenEquivalent(values: Partial<Record<ResourceColor, number>>) {
+  return (values.green ?? 0) + (values.blue ?? 0) * 3 + (values.purple ?? 0) * 9
+}
+
+function getGreenEquivalentReward(category: FarmingCategory, farmLevel: string) {
+  const reward = farmingRewards[category]?.[farmLevel as FarmingLevel]
+  return reward ? toGreenEquivalent(reward) : 0
+}
+
 function createScheduleItem(category: FarmingCategory, farmLevel: string, color: ResourceColor, target: number, progress = 0): ScheduleItem {
   const reward = farmingRewards[category][farmLevel as FarmingLevel]
-  const rewardAmount = reward[color] ?? 0
+  const normalizedColor = isAutoConvertCategory(category) ? 'green' : color
+  const rewardAmount = isAutoConvertCategory(category) ? getGreenEquivalentReward(category, farmLevel) : (reward[normalizedColor] ?? 0)
+  const normalizedTarget = isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: target }) : target
+  const normalizedProgress = isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: progress }) : progress
 
   return {
     category,
-    color,
+    color: normalizedColor,
     farmLevel,
-    id: createItemId(category, farmLevel, color),
-    name: `${color} ${categoryLabels[category]}`,
-    source: `${categoryLabels[category]} stage ${farmLevel} (${reward.stamina} stamina, avg ${rewardAmount})`,
-    target,
-    progress,
+    id: createItemId(category, farmLevel, normalizedColor),
+    name: isAutoConvertCategory(category) ? `${categoryLabels[category]} value` : `${normalizedColor} ${categoryLabels[category]}`,
+    progressUnit: isAutoConvertCategory(category) ? 'value' : 'item',
+    source: `${categoryLabels[category]} stage ${farmLevel} (${reward.stamina} stamina, avg ${rewardAmount}${isAutoConvertCategory(category) ? ' green value' : ''})`,
+    target: normalizedTarget,
+    progress: normalizedProgress,
   }
 }
 
@@ -142,231 +157,35 @@ function parseScheduleItemId(id: string) {
 
 function getFarmRewardAmount(item: ScheduleItem) {
   if (item.progressUnit === 'farm') return 1
+  if (isAutoConvertCategory(item.category)) return getGreenEquivalentReward(item.category, item.farmLevel)
 
   const reward = farmingRewards[item.category]?.[item.farmLevel as FarmingLevel]
   return reward?.[item.color] ?? 0
 }
 
-function hasActiveRarity(schedule: ScheduleItem[], category: FarmingCategory, farmLevel: string, color: ResourceColor) {
-  return schedule.some(
-    (item) =>
-      item.category === category &&
-      item.farmLevel === farmLevel &&
-      item.color === color &&
-      item.progress < item.target,
-  )
-}
-
-function getConvertedReward(schedule: ScheduleItem[], category: FarmingCategory, farmLevel: string) {
-  const reward = farmingRewards[category]?.[farmLevel as FarmingLevel]
-  if (!reward) return { green: 0, blue: 0, purple: 0 }
-
-  const purpleActive = hasActiveRarity(schedule, category, farmLevel, 'purple')
-  const blueActive = hasActiveRarity(schedule, category, farmLevel, 'blue')
-
-  return {
-    purple: purpleActive ? (reward.purple ?? 0) : 0,
-    blue: (reward.blue ?? 0) + (purpleActive ? 0 : (reward.purple ?? 0) * 3),
-    green: (reward.green ?? 0) + (blueActive ? 0 : (reward.blue ?? 0) * 3 + (purpleActive ? 0 : (reward.purple ?? 0) * 9)),
-  }
-}
-
-function getHighestRewardRarity(category: FarmingCategory, farmLevel: string) {
-  const reward = farmingRewards[category]?.[farmLevel as FarmingLevel]
-  return rarityFallbackOrder.find((color) => (reward?.[color] ?? 0) > 0)
-}
-
-function getActiveHighestRarity(schedule: ScheduleItem[], category: FarmingCategory, farmLevel: string) {
-  return rarityFallbackOrder.find((color) =>
-    schedule.some(
-      (item) =>
-        item.category === category &&
-        item.farmLevel === farmLevel &&
-        item.color === color &&
-        item.progress < item.target,
-    ),
-  )
-}
-
-function canUseFarmAddButton(schedule: ScheduleItem[], item: ScheduleItem) {
+function canUseFarmAddButton(item: ScheduleItem) {
   if (item.progressUnit === 'farm') return true
-  if (!overflowCategories.includes(item.category)) return getFarmRewardAmount(item) > 0
-
-  return item.color === (getActiveHighestRarity(schedule, item.category, item.farmLevel) ?? getHighestRewardRarity(item.category, item.farmLevel))
-}
-
-function convertOverflowAmount(fromColor: ResourceColor, toColor: ResourceColor, amount: number) {
-  const fromIndex = rarityFallbackOrder.indexOf(fromColor)
-  const toIndex = rarityFallbackOrder.indexOf(toColor)
-  if (fromIndex < 0 || toIndex < 0) return amount
-  if (toIndex === fromIndex) return amount
-  if (toIndex > fromIndex) return amount * 3 ** (toIndex - fromIndex)
-  return amount / 3 ** (fromIndex - toIndex)
+  return getFarmRewardAmount(item) > 0
 }
 
 function formatProgressAmount(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '')
 }
 
-function applyOverflowProgress(schedule: ScheduleItem[], sourceItem: ScheduleItem, targetColor: ResourceColor, amount: number) {
-  if (amount <= 0) return false
-
-  const targetItem = schedule.find(
-    (item) =>
-      item.category === sourceItem.category &&
-      item.farmLevel === sourceItem.farmLevel &&
-      item.color === targetColor &&
-      item.progress < item.target,
-  )
-  if (!targetItem) return false
-
-  const capacity = targetItem.target - targetItem.progress
-  const appliedAmount = Math.min(capacity, amount)
-  targetItem.progress += appliedAmount
-  return appliedAmount > 0
-}
-
-function applyOverflowChain(
-  schedule: ScheduleItem[],
-  sourceItem: ScheduleItem,
-  startColor: ResourceColor,
-  amount: number,
-) {
-  let didApply = false
-  let currentColor: ResourceColor = startColor
-  let currentAmount = amount
-
-  while (currentAmount > 0) {
-    const target = schedule.find(
-      (item) =>
-        item.category === sourceItem.category &&
-        item.farmLevel === sourceItem.farmLevel &&
-        item.color === currentColor &&
-        item.progress < item.target,
-    )
-
-    if (target) {
-      const capacity = target.target - target.progress
-      const appliedAmount = Math.min(capacity, currentAmount)
-      target.progress += appliedAmount
-      didApply = didApply || appliedAmount > 0
-      currentAmount = Math.max(0, currentAmount - appliedAmount)
-    }
-
-    if (currentAmount <= 0) break
-
-    const nextColor = currentColor === 'green' ? 'blue' : currentColor === 'blue' ? 'purple' : null
-    if (!nextColor) break
-
-    const convertedAmount = convertOverflowAmount(currentColor, nextColor, currentAmount)
-    if (convertedAmount <= 0) break
-
-    currentColor = nextColor
-    currentAmount = convertedAmount
-  }
-
-  return didApply
-}
-
-function getOverflowChain(startColor: ResourceColor) {
-  if (startColor === 'green') return ['blue', 'purple'] as const
-  if (startColor === 'blue') return ['purple'] as const
-  return [] as const
-}
-
-function applyStageRewardWithOverflow(
-  schedule: ScheduleItem[],
-  sourceItem: ScheduleItem,
-  reward: { green: number; blue: number; purple: number },
-) {
-  let didApply = false
-  ;(['green', 'blue', 'purple'] as const).forEach((sourceColor) => {
-    const rewardAmount = reward[sourceColor]
-    if (rewardAmount <= 0) return
-
-    const target = schedule.find(
-      (item) =>
-        item.category === sourceItem.category &&
-        item.farmLevel === sourceItem.farmLevel &&
-        item.color === sourceColor &&
-        item.progress < item.target,
-    )
-
-    const chain = getOverflowChain(sourceColor)
-    if (!target) {
-      const nextColor = chain[0]
-      if (nextColor) {
-        didApply = applyOverflowChain(
-          schedule,
-          sourceItem,
-          nextColor,
-          convertOverflowAmount(sourceColor, nextColor, rewardAmount),
-        ) || didApply
-      }
-      return
-    }
-
-    const capacity = target.target - target.progress
-    const appliedAmount = Math.min(capacity, rewardAmount)
-    target.progress += appliedAmount
-    didApply = didApply || appliedAmount > 0
-
-    const overflowAmount = rewardAmount - appliedAmount
-    const nextColor = chain[0]
-    if (overflowAmount <= 0 || !nextColor) return
-
-    didApply = applyOverflowChain(
-      schedule,
-      sourceItem,
-      nextColor,
-      convertOverflowAmount(sourceColor, nextColor, overflowAmount),
-    ) || didApply
-  })
-
-  return didApply
-}
-
-function applyProgressWithOverflow(schedule: ScheduleItem[], id: string, amount: number, includeStageRewards = false) {
+function applyProgress(schedule: ScheduleItem[], id: string, amount: number, includeStageRewards = false) {
   const sourceItem = schedule.find((item) => item.id === id)
   if (!sourceItem) return { didApply: false, nextSchedule: schedule }
 
-  if (!overflowCategories.includes(sourceItem.category)) {
-    return {
-      didApply: sourceItem.progress < sourceItem.target && amount > 0,
-      nextSchedule: schedule.map((item) =>
-        item.id === id ? { ...item, progress: Math.min(item.target, item.progress + amount) } : item,
-      ),
-    }
+  const progressAmount = includeStageRewards && isAutoConvertCategory(sourceItem.category)
+    ? getGreenEquivalentReward(sourceItem.category, sourceItem.farmLevel)
+    : amount
+
+  return {
+    didApply: sourceItem.progress < sourceItem.target && progressAmount > 0,
+    nextSchedule: schedule.map((item) =>
+      item.id === id ? { ...item, progress: Math.min(item.target, item.progress + progressAmount) } : item,
+    ),
   }
-
-  const nextSchedule = schedule.map((item) => ({ ...item }))
-  const targetItem = nextSchedule.find((item) => item.id === id)
-  if (!targetItem) return { didApply: false, nextSchedule: schedule }
-
-  const reward = includeStageRewards ? getConvertedReward(schedule, sourceItem.category, sourceItem.farmLevel) : null
-  if (includeStageRewards && reward) {
-    return { didApply: applyStageRewardWithOverflow(nextSchedule, sourceItem, reward), nextSchedule }
-  }
-
-  const appliedAmount = Math.min(targetItem.target - targetItem.progress, amount)
-  targetItem.progress += appliedAmount
-  let didApply = appliedAmount > 0
-  const overflowAmount = amount - appliedAmount
-  if (overflowAmount <= 0) {
-    return { didApply, nextSchedule }
-  }
-
-  if (sourceItem.color === 'purple') {
-    const blueAmount = convertOverflowAmount('purple', 'blue', overflowAmount)
-    const greenAmount = convertOverflowAmount('purple', 'green', overflowAmount)
-    didApply = applyOverflowProgress(nextSchedule, sourceItem, 'blue', blueAmount) || didApply
-    didApply = applyOverflowProgress(nextSchedule, sourceItem, 'green', greenAmount) || didApply
-  } else if (sourceItem.color === 'blue') {
-    const greenAmount = convertOverflowAmount('blue', 'green', overflowAmount)
-    didApply = applyOverflowProgress(nextSchedule, sourceItem, 'green', greenAmount) || didApply
-  }
-
-  return { didApply, nextSchedule }
 }
 
 function mergeSchedule(current: ScheduleItem[], incoming: ScheduleItem[]) {
@@ -398,7 +217,7 @@ function createStoredSchedule(schedule: ScheduleItem[]): StoredSchedule {
 function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
   if (!Array.isArray(schedule)) throw new Error('Invalid schedule')
 
-  return schedule.map((rawItem) => {
+  const sanitized: ScheduleItem[] = schedule.map((rawItem) => {
     const item = rawItem as Partial<ScheduleItem>
     const parsedId = parseScheduleItemId(String(item.id))
     const category = (String(item.category || parsedId?.category || 'book')) as FarmingCategory
@@ -431,8 +250,8 @@ function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
     }
 
     return {
-      category: 'book',
-      color: 'yellow',
+      category: 'book' as FarmingCategory,
+      color: 'yellow' as ResourceColor,
       farmLevel: '6',
       id: String(item.id),
       name: String(item.name),
@@ -441,14 +260,28 @@ function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
       progress: normalizeAmount(String(item.progress), 0),
     }
   })
+
+  return sanitized.reduce<ScheduleItem[]>((merged, item) => {
+    const existingItem = merged.find((entry) => entry.id === item.id)
+    if (!existingItem) return [...merged, item]
+
+    return merged.map((entry) =>
+      entry.id === item.id
+        ? {
+            ...entry,
+            name: item.name,
+            source: item.source,
+            target: entry.target + item.target,
+            progress: entry.progress + item.progress,
+          }
+        : entry,
+    )
+  }, [])
 }
 
-function getPositiveItems<T extends string>(
-  values: Record<T, number>,
-  colors: readonly T[],
-  createItem: (color: T, amount: number) => ScheduleItem,
-) {
-  return colors.flatMap((color) => (values[color] > 0 ? [createItem(color, values[color])] : []))
+function createAutoConvertScheduleItem(category: 'art' | 'essence' | 'hammer', farmLevel: string, values: Record<'green' | 'blue' | 'purple', number>) {
+  const target = toGreenEquivalent(values)
+  return target > 0 ? createScheduleItem(category, farmLevel, 'green', target) : null
 }
 
 type EntryViewProps = {
@@ -491,6 +324,7 @@ const EntryView = memo(function EntryView({ importInput, message, onImportClick,
 type ManualSetupProps = {
   availableColors: ResourceColor[]
   availableLevels: string[]
+  isAutoConvertCategory: boolean
   selectedColor: ResourceColor
   selectedRewardAmount: number
   selectedStamina: number
@@ -502,6 +336,7 @@ type ManualSetupProps = {
 const ManualSetup = memo(function ManualSetup({
   availableColors,
   availableLevels,
+  isAutoConvertCategory,
   selectedColor,
   selectedRewardAmount,
   selectedStamina,
@@ -551,7 +386,7 @@ const ManualSetup = memo(function ManualSetup({
         </div>
       </div>
       <p className="farming-hint">
-        Source: {categoryLabels[selection.category]} stage {selection.farmLevel}, {selectedStamina} stamina, reward rata-rata {selectedRewardAmount} {selectedColor}.
+        Source: {categoryLabels[selection.category]} stage {selection.farmLevel}, {selectedStamina} stamina, reward rata-rata {selectedRewardAmount} {isAutoConvertCategory ? 'green value' : selectedColor}.
       </p>
     </section>
   )
@@ -739,6 +574,7 @@ const SkillPlannerInputs = memo(function SkillPlannerInputs({ state, onChange }:
 type SetupViewProps = {
   availableColors: ResourceColor[]
   availableLevels: string[]
+  isManualAutoConvertCategory: boolean
   characterFarmLevel: string
   manualSelection: ManualSelection
   selectedCharacterId: string | null
@@ -786,6 +622,7 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
         <ManualSetup
           availableColors={props.availableColors}
           availableLevels={props.availableLevels}
+          isAutoConvertCategory={props.isManualAutoConvertCategory}
           selectedColor={props.selectedColor}
           selectedRewardAmount={props.selectedRewardAmount}
           selectedStamina={props.selectedStamina}
@@ -893,7 +730,6 @@ const ScheduleView = memo(function ScheduleView({
             <ScheduleCard
               key={item.id}
               item={item}
-              schedule={schedule}
               onRemove={onRemove}
               onTargetEdit={onTargetEdit}
               onUpdateProgress={onUpdateProgress}
@@ -907,27 +743,16 @@ const ScheduleView = memo(function ScheduleView({
 
 type ScheduleCardProps = {
   item: ScheduleItem
-  schedule: ScheduleItem[]
   onRemove: (id: string) => void
   onTargetEdit: (id: string) => void
   onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
 }
 
-const ScheduleCard = memo(function ScheduleCard({ item, schedule, onRemove, onTargetEdit, onUpdateProgress }: ScheduleCardProps) {
+const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, onUpdateProgress }: ScheduleCardProps) {
   const progressPercent = item.target === 0 ? 100 : Math.min(100, Math.round((item.progress / item.target) * 100))
-  const convertedReward = getConvertedReward(schedule, item.category, item.farmLevel)
-  const canAddProgress = canUseFarmAddButton(schedule, item)
+  const canAddProgress = canUseFarmAddButton(item)
   const progressUnitLabel = item.progressUnit === 'farm' ? ' farm' : ''
-  const customRewardAmount =
-    item.progressUnit === 'farm'
-      ? 1
-      : item.color === 'purple'
-        ? convertedReward.purple
-        : item.color === 'blue'
-          ? convertedReward.blue
-          : item.color === 'green'
-            ? convertedReward.green
-            : getFarmRewardAmount(item)
+  const customRewardAmount = getFarmRewardAmount(item)
 
   return (
     <article className="farming-card">
@@ -982,22 +807,15 @@ export function DailyScheduleContent() {
   const packSkillResult = useSkillCalculator(packSkillState)
 
   const availableLevels = useMemo(() => Object.keys(farmingRewards[manualSelection.category]), [manualSelection.category])
-  const selectedReward = farmingRewards[manualSelection.category][manualSelection.farmLevel as FarmingLevel] ?? farmingRewards[manualSelection.category][availableLevels[0] as FarmingLevel]
-  const availableColors = useMemo(
-    () => resourceColors.filter((resourceColor) => selectedReward[resourceColor] > 0),
-    [selectedReward],
+  const selectedFarmLevel = availableLevels.includes(manualSelection.farmLevel) ? manualSelection.farmLevel : availableLevels[0] ?? '1'
+  const selectedReward = farmingRewards[manualSelection.category][selectedFarmLevel as FarmingLevel] ?? farmingRewards[manualSelection.category][availableLevels[0] as FarmingLevel]
+  const isManualAutoConvertCategory = isAutoConvertCategory(manualSelection.category)
+  const availableColors = useMemo<ResourceColor[]>(
+    () => isManualAutoConvertCategory ? ['green', 'blue', 'purple'] : resourceColors.filter((resourceColor) => selectedReward[resourceColor] > 0),
+    [isManualAutoConvertCategory, selectedReward],
   )
-  const selectedColor = availableColors.includes(manualSelection.color) ? manualSelection.color : availableColors[0] ?? 'green'
-  const selectedRewardAmount = selectedReward[selectedColor] ?? 0
-
-  useEffect(() => {
-    setManualSelection((current) => {
-      const nextLevel = availableLevels.includes(current.farmLevel) ? current.farmLevel : availableLevels[0] ?? '1'
-      const nextColor = availableColors.includes(current.color) ? current.color : availableColors[0] ?? 'green'
-      if (nextLevel === current.farmLevel && nextColor === current.color) return current
-      return { ...current, color: nextColor, farmLevel: nextLevel }
-    })
-  }, [availableColors, availableLevels])
+  const selectedColor: ResourceColor = availableColors.includes(manualSelection.color) ? manualSelection.color : availableColors[0] ?? 'green'
+  const selectedRewardAmount = isManualAutoConvertCategory ? getGreenEquivalentReward(manualSelection.category, selectedFarmLevel) : (selectedReward[selectedColor] ?? 0)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 960px)')
@@ -1120,17 +938,17 @@ export function DailyScheduleContent() {
   }, [exportResult])
 
   const generateManualSchedule = useCallback(() => {
-    const item = createScheduleItem(manualSelection.category, manualSelection.farmLevel, selectedColor, manualSelection.target, 0)
+    const item = createScheduleItem(manualSelection.category, selectedFarmLevel, selectedColor, manualSelection.target, 0)
     setSchedule((current) => mergeSchedule(current, [item]))
     setView('schedule')
     setMessage('Target added.')
-  }, [manualSelection.category, manualSelection.farmLevel, manualSelection.target, selectedColor])
+  }, [manualSelection.category, manualSelection.target, selectedColor, selectedFarmLevel])
 
   const updateProgress = useCallback((id: string, amount: number, includeStageRewards = false) => {
     let isCompleted = false
 
     setSchedule((current) => {
-      const { didApply, nextSchedule } = applyProgressWithOverflow(current, id, amount, includeStageRewards)
+      const { didApply, nextSchedule } = applyProgress(current, id, amount, includeStageRewards)
       isCompleted = !didApply
       return nextSchedule
     })
@@ -1171,11 +989,15 @@ export function DailyScheduleContent() {
       createExpFarmScheduleItem('tamahagane', characterFarmLevel, packWeaponResult.missingExp),
     ].filter((item): item is ScheduleItem => item !== null)
 
+    const autoConvertItems = [
+      createAutoConvertScheduleItem('essence', characterFarmLevel, packCharacterResult.essenceNeeded),
+      createAutoConvertScheduleItem('hammer', characterFarmLevel, packWeaponResult.hammerNeeded),
+      createAutoConvertScheduleItem('art', characterFarmLevel, packSkillResult.needed),
+    ].filter((item): item is ScheduleItem => item !== null)
+
     const generatedItems: ScheduleItem[] = [
       ...expFarmItems,
-      ...getPositiveItems(packCharacterResult.essenceNeeded, threeStarColors, (color, amount) => createScheduleItem('essence', characterFarmLevel, color, amount)),
-      ...getPositiveItems(packWeaponResult.hammerNeeded, threeStarColors, (color, amount) => createScheduleItem('hammer', characterFarmLevel, color, amount)),
-      ...getPositiveItems(packSkillResult.needed, threeStarColors, (color, amount) => createScheduleItem('art', characterFarmLevel, color, amount)),
+      ...autoConvertItems,
       ...(packSkillResult.passiveMissingOmamori > 0 ? [createScheduleItem('omamori', characterFarmLevel, 'yellow', packSkillResult.passiveMissingOmamori)] : []),
     ]
 
@@ -1210,7 +1032,8 @@ export function DailyScheduleContent() {
           availableColors={availableColors}
           availableLevels={availableLevels}
           characterFarmLevel={characterFarmLevel}
-          manualSelection={manualSelection}
+          isManualAutoConvertCategory={isManualAutoConvertCategory}
+          manualSelection={{ ...manualSelection, color: selectedColor, farmLevel: selectedFarmLevel }}
           selectedCharacterId={selectedCharacterId}
           selectedColor={selectedColor}
           selectedRewardAmount={selectedRewardAmount}

@@ -51,7 +51,7 @@ export function WeaponTab({ showOutput = true }: WeaponTabProps) {
           <StatCard label="Extra EXP" value={formatNumber(result.recommendation.overshoot)} />
           <StatCard label="Gold Cost" value={formatNumber(result.gold)} />
           <StatCard label="Ascension Kans" value={formatNumber(result.ascension)} />
-          <StatCard label="Need Hammers" value={`${formatNumber(result.hammerNeeded.green)} / ${formatNumber(result.hammerNeeded.blue)} / ${formatNumber(result.hammerNeeded.purple)}`} />
+          <StatCard label="Need Hammers (green value)" value={formatNumber(result.hammerNeeded.green)} />
         </section>
       )}
     </>

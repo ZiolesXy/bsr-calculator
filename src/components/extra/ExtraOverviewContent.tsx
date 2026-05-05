@@ -42,8 +42,8 @@ export function ExtraOverviewContent({ character, weapon, skill }: ExtraOverview
         </div>
         <RecommendationCard label="Books to prepare" recommendation={character.recommendation} />
         <StatCard
-          label="Need Essences"
-          value={`${formatNumber(character.essenceNeeded.green)} / ${formatNumber(character.essenceNeeded.blue)} / ${formatNumber(character.essenceNeeded.purple)}`}
+          label="Need Essences (green value)"
+          value={formatNumber(character.essenceNeeded.green)}
         />
       </article>
 
@@ -59,8 +59,8 @@ export function ExtraOverviewContent({ character, weapon, skill }: ExtraOverview
         </div>
         <RecommendationCard label="Tamahagane to prepare" recommendation={weapon.recommendation} />
         <StatCard
-          label="Need Hammers"
-          value={`${formatNumber(weapon.hammerNeeded.green)} / ${formatNumber(weapon.hammerNeeded.blue)} / ${formatNumber(weapon.hammerNeeded.purple)}`}
+          label="Need Hammers (green value)"
+          value={formatNumber(weapon.hammerNeeded.green)}
         />
       </article>
 
@@ -70,7 +70,7 @@ export function ExtraOverviewContent({ character, weapon, skill }: ExtraOverview
           <strong>Skill summary</strong>
         </div>
         <div className="overview-inline-stats">
-          <StatCard label="Need Arts" value={`${formatNumber(skill.needed.green)} / ${formatNumber(skill.needed.blue)} / ${formatNumber(skill.needed.purple)}`} />
+          <StatCard label="Need Arts (green value)" value={formatNumber(skill.needed.green)} />
           <StatCard label="Skill Kans" value={formatNumber(skill.totals.kans)} />
           <StatCard label="Passive Kans" value={formatNumber(skill.passiveTotalKans)} />
         </div>

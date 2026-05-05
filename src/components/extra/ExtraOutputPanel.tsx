@@ -35,11 +35,11 @@ export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, tot
         <>
           <StatCard label="Character Missing EXP" value={formatNumber(character.missingExp)} />
           <RecommendationCard label="Books to prepare" recommendation={character.recommendation} />
-          <StatCard label="Need Essences" value={`${formatNumber(character.essenceNeeded.green)} / ${formatNumber(character.essenceNeeded.blue)} / ${formatNumber(character.essenceNeeded.purple)}`} />
+          <StatCard label="Need Essences (green value)" value={formatNumber(character.essenceNeeded.green)} />
           <StatCard label="Weapon Missing EXP" value={formatNumber(weapon.missingExp)} />
           <RecommendationCard label="Tamahagane to prepare" recommendation={weapon.recommendation} />
-          <StatCard label="Need Hammers" value={`${formatNumber(weapon.hammerNeeded.green)} / ${formatNumber(weapon.hammerNeeded.blue)} / ${formatNumber(weapon.hammerNeeded.purple)}`} />
-          <StatCard label="Need Arts" value={`${formatNumber(skill.needed.green)} / ${formatNumber(skill.needed.blue)} / ${formatNumber(skill.needed.purple)}`} />
+          <StatCard label="Need Hammers (green value)" value={formatNumber(weapon.hammerNeeded.green)} />
+          <StatCard label="Need Arts (green value)" value={formatNumber(skill.needed.green)} />
           <StatCard label="Total Kans All" value={formatNumber(totals.totalKansCombined)} />
           <StatCard label="Weapon Gold" value={formatNumber(weapon.gold)} />
           <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
