@@ -24,12 +24,12 @@
     "6": { "green": 0, "blue": 0, "purple": 2, "yellow": 0, "stamina": 20 }
   },
   "book": {
-    "1": { "green": 0, "blue": 10, "purple": 0, "yellow": 0, "stamina": 20 },
-    "2": { "green": 1, "blue": 12, "purple": 0, "yellow": 0, "stamina": 20 },
-    "3": { "green": 0, "blue": 4, "purple": 3, "yellow": 0, "stamina": 20 },
-    "4": { "green": 0, "blue": 6, "purple": 3, "yellow": 0, "stamina": 20 },
-    "5": { "green": 0, "blue": 5, "purple": 2, "yellow": 1, "stamina": 20 },
-    "6": { "green": 0, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 }
+    "1": { "green": 20, "blue": 10, "purple": 0, "yellow": 0, "stamina": 20 },
+    "2": { "green": 21, "blue": 12, "purple": 0, "yellow": 0, "stamina": 20 },
+    "3": { "green": 20, "blue": 4, "purple": 3, "yellow": 0, "stamina": 20 },
+    "4": { "green": 20, "blue": 6, "purple": 3, "yellow": 0, "stamina": 20 },
+    "5": { "green": 20, "blue": 5, "purple": 2, "yellow": 1, "stamina": 20 },
+    "6": { "green": 20, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 }
   },
   "tamahagane": {
     "1": { "green": 12, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },

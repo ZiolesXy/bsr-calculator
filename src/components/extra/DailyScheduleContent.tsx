@@ -131,6 +131,21 @@ function calculateRewardExp(category: 'book' | 'tamahagane', farmLevel: string) 
   return resourceColors.reduce((total, color) => total + (reward[color] ?? 0) * values[color], 0)
 }
 
+function getRewardSummary(category: FarmingCategory, farmLevel: string, color: ResourceColor) {
+  if (category === 'book' || category === 'tamahagane') {
+    return {
+      amount: calculateRewardExp(category, farmLevel),
+      unit: 'EXP/farm',
+    }
+  }
+
+  const reward = farmingRewards[category][farmLevel as FarmingLevel]
+  return {
+    amount: reward[color] ?? 0,
+    unit: color,
+  }
+}
+
 function createExpFarmScheduleItem(category: 'book' | 'tamahagane', farmLevel: string, missingExp: number): ScheduleItem | null {
   const reward = farmingRewards[category][farmLevel as FarmingLevel]
   const expPerFarm = calculateRewardExp(category, farmLevel)
@@ -323,9 +338,9 @@ const EntryView = memo(function EntryView({ importInput, message, onImportClick,
 type ManualSetupProps = {
   availableColors: ResourceColor[]
   availableLevels: string[]
-  isAutoConvertCategory: boolean
   selectedColor: ResourceColor
   selectedRewardAmount: number
+  selectedRewardUnit: string
   selectedStamina: number
   selection: ManualSelection
   onGenerate: () => void
@@ -335,9 +350,9 @@ type ManualSetupProps = {
 const ManualSetup = memo(function ManualSetup({
   availableColors,
   availableLevels,
-  isAutoConvertCategory,
   selectedColor,
   selectedRewardAmount,
+  selectedRewardUnit,
   selectedStamina,
   selection,
   onGenerate,
@@ -385,7 +400,7 @@ const ManualSetup = memo(function ManualSetup({
         </div>
       </div>
       <p className="farming-hint">
-        Source: {categoryLabels[selection.category]} stage {selection.farmLevel}, {selectedStamina} stamina, reward rata-rata {selectedRewardAmount} {isAutoConvertCategory ? 'green value' : selectedColor}.
+        Source: {categoryLabels[selection.category]} stage {selection.farmLevel}, {selectedStamina} stamina, reward rata-rata {selectedRewardAmount} {selectedRewardUnit}.
       </p>
     </section>
   )
@@ -579,6 +594,7 @@ type SetupViewProps = {
   selectedCharacterId: string | null
   selectedColor: ResourceColor
   selectedRewardAmount: number
+  selectedRewardUnit: string
   selectedStamina: number
   setupMode: SetupMode
   characterState: CharacterState
@@ -621,9 +637,9 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
         <ManualSetup
           availableColors={props.availableColors}
           availableLevels={props.availableLevels}
-          isAutoConvertCategory={props.isManualAutoConvertCategory}
           selectedColor={props.selectedColor}
           selectedRewardAmount={props.selectedRewardAmount}
+          selectedRewardUnit={props.selectedRewardUnit}
           selectedStamina={props.selectedStamina}
           selection={props.manualSelection}
           onGenerate={props.onGenerateManual}
@@ -814,7 +830,7 @@ export function DailyScheduleContent() {
     [isManualAutoConvertCategory, selectedReward],
   )
   const selectedColor: ResourceColor = availableColors.includes(manualSelection.color) ? manualSelection.color : availableColors[0] ?? 'green'
-  const selectedRewardAmount = isManualAutoConvertCategory ? getGreenEquivalentReward(manualSelection.category, selectedFarmLevel) : (selectedReward[selectedColor] ?? 0)
+  const selectedRewardSummary = getRewardSummary(manualSelection.category, selectedFarmLevel, selectedColor)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 960px)')
@@ -1041,7 +1057,8 @@ export function DailyScheduleContent() {
           manualSelection={{ ...manualSelection, color: selectedColor, farmLevel: selectedFarmLevel }}
           selectedCharacterId={selectedCharacterId}
           selectedColor={selectedColor}
-          selectedRewardAmount={selectedRewardAmount}
+          selectedRewardAmount={selectedRewardSummary.amount}
+          selectedRewardUnit={selectedRewardSummary.unit}
           selectedStamina={selectedReward.stamina}
           setupMode={setupMode}
           characterState={packCharacterState}
