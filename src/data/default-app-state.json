@@ -1,0 +1,61 @@
+{
+  "passiveLevels": {
+    "passive1": { "current": 0, "target": 3 },
+    "passive2": { "current": 0, "target": 3 },
+    "passive3": { "current": 0, "target": 3 }
+  },
+  "character": {
+    "current": 1,
+    "target": 100,
+    "ownedBooks": { "green": 0, "blue": 0, "purple": 0, "yellow": 0 },
+    "ownedEssences": { "green": 0, "blue": 0, "purple": 0 },
+    "bookMode": "yellow"
+  },
+  "weapon": {
+    "current": 1,
+    "target": 100,
+    "ownedTamahagane": { "green": 0, "blue": 0, "purple": 0, "yellow": 0 },
+    "ownedHammers": { "green": 0, "blue": 0, "purple": 0 },
+    "tamahaganeMode": "yellow"
+  },
+  "skill": {
+    "current": 1,
+    "target": 9,
+    "selectedTypes": ["basic", "skill", "counter", "ultimate"],
+    "ownedArts": { "green": 0, "blue": 0, "purple": 0 },
+    "ownedOmamori": 0,
+    "passiveLevels": {
+      "passive1": { "current": 0, "target": 3 },
+      "passive2": { "current": 0, "target": 3 },
+      "passive3": { "current": 0, "target": 3 }
+    }
+  },
+  "totalPlanner": {
+    "character": {
+      "current": 1,
+      "target": 100,
+      "ownedBooks": { "green": 0, "blue": 0, "purple": 0, "yellow": 0 },
+      "ownedEssences": { "green": 0, "blue": 0, "purple": 0 },
+      "bookMode": "yellow"
+    },
+    "weapon": {
+      "current": 1,
+      "target": 100,
+      "ownedTamahagane": { "green": 0, "blue": 0, "purple": 0, "yellow": 0 },
+      "ownedHammers": { "green": 0, "blue": 0, "purple": 0 },
+      "tamahaganeMode": "yellow"
+    },
+    "skill": {
+      "current": 1,
+      "target": 9,
+      "selectedTypes": ["basic", "skill", "counter", "ultimate"],
+      "ownedArts": { "green": 0, "blue": 0, "purple": 0 },
+      "ownedOmamori": 0,
+      "passiveLevels": {
+        "passive1": { "current": 0, "target": 3 },
+        "passive2": { "current": 0, "target": 3 },
+        "passive3": { "current": 0, "target": 3 }
+      }
+    }
+  }
+}

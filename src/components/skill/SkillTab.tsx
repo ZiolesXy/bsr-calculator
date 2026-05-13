@@ -11,6 +11,8 @@ type SkillTabProps = {
   showOutput?: boolean
 }
 
+const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill'] as const
+
 export function SkillTab({ showOutput = true }: SkillTabProps) {
   const { skillState: state, setSkillState } = useSkillState()
   const result = useSkillCalculator(state)
@@ -29,7 +31,7 @@ export function SkillTab({ showOutput = true }: SkillTabProps) {
           <SelectField label="Target level" value={state.target} options={skillLevels.slice(1)} onChange={(value) => setSkillState((prev) => ({ ...prev, target: Number(value) }))} />
         </div>
         <div className="toggle-grid">
-          {['basic', 'skill', 'counter', 'ultimate'].map((type) => {
+          {skillTypes.map((type) => {
             const active = state.selectedTypes.includes(type)
             return (
               <button

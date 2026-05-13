@@ -64,7 +64,7 @@ export type WeaponState = {
 export type SkillState = {
   current: number
   target: number
-  selectedTypes: string[]
+  selectedTypes: Array<'basic' | 'skill' | 'counter' | 'ultimate' | 'battlefield-skill'>
   ownedArts: ThreeColorCounts
   ownedOmamori: number
   passiveLevels: PassiveLevelsState

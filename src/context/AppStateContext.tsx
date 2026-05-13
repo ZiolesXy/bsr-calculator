@@ -1,61 +1,18 @@
 import { createContext, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
-import type { CharacterState, PassiveLevelsState, SkillState, WeaponState } from '../types'
+import defaultAppState from '../data/default-app-state.json'
+import type { CharacterState, SkillState, WeaponState } from '../types'
 
-const defaultPassiveLevels: PassiveLevelsState = {
-  passive1: { current: 0, target: 3 },
-  passive2: { current: 0, target: 3 },
-  passive3: { current: 0, target: 3 },
-}
+const defaultCharacterState: CharacterState = defaultAppState.character as CharacterState
 
-const defaultCharacterState: CharacterState = {
-  current: 1,
-  target: 100,
-  ownedBooks: { green: 0, blue: 0, purple: 0, yellow: 0 },
-  ownedEssences: { green: 0, blue: 0, purple: 0 },
-  bookMode: 'yellow',
-}
+const defaultWeaponState: WeaponState = defaultAppState.weapon as WeaponState
 
-const defaultWeaponState: WeaponState = {
-  current: 1,
-  target: 100,
-  ownedTamahagane: { green: 0, blue: 0, purple: 0, yellow: 0 },
-  ownedHammers: { green: 0, blue: 0, purple: 0 },
-  tamahaganeMode: 'yellow',
-}
+const defaultSkillState: SkillState = defaultAppState.skill as SkillState
 
-const defaultSkillState: SkillState = {
-  current: 1,
-  target: 9,
-  selectedTypes: ['basic', 'skill', 'counter', 'ultimate'],
-  ownedArts: { green: 0, blue: 0, purple: 0 },
-  ownedOmamori: 0,
-  passiveLevels: defaultPassiveLevels,
-}
+export const totalPlannerCharacterPreset: CharacterState = defaultAppState.totalPlanner.character as CharacterState
 
-export const totalPlannerCharacterPreset: CharacterState = {
-  current: 1,
-  target: 100,
-  ownedBooks: { green: 0, blue: 0, purple: 0, yellow: 0 },
-  ownedEssences: { green: 0, blue: 0, purple: 0 },
-  bookMode: 'yellow',
-}
+export const totalPlannerWeaponPreset: WeaponState = defaultAppState.totalPlanner.weapon as WeaponState
 
-export const totalPlannerWeaponPreset: WeaponState = {
-  current: 1,
-  target: 100,
-  ownedTamahagane: { green: 0, blue: 0, purple: 0, yellow: 0 },
-  ownedHammers: { green: 0, blue: 0, purple: 0 },
-  tamahaganeMode: 'yellow',
-}
-
-export const totalPlannerSkillPreset: SkillState = {
-  current: 1,
-  target: 9,
-  selectedTypes: ['basic', 'skill', 'counter', 'ultimate'],
-  ownedArts: { green: 0, blue: 0, purple: 0 },
-  ownedOmamori: 0,
-  passiveLevels: defaultPassiveLevels,
-}
+export const totalPlannerSkillPreset: SkillState = defaultAppState.totalPlanner.skill as SkillState
 
 type StateContextValue<T> = {
   state: T
