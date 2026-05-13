@@ -41,12 +41,12 @@
     "6": { "green": 20, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 }
   },
   "tamahagane": {
-    "1": { "green": 12, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
-    "2": { "green": 13, "blue": 6, "purple": 0, "yellow": 0, "stamina": 20 },
-    "3": { "green": 0, "blue": 4, "purple": 5, "yellow": 5, "stamina": 20 },
-    "4": { "green": 0, "blue": 5, "purple": 6, "yellow": 6, "stamina": 20 },
-    "5": { "green": 0, "blue": 2, "purple": 2, "yellow": 2, "stamina": 20 },
-    "6": { "green": 0, "blue": 2, "purple": 3, "yellow": 3, "stamina": 20 }
+    "1": { "green": 16, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
+    "2": { "green": 22, "blue": 6, "purple": 0, "yellow": 0, "stamina": 20 },
+    "3": { "green": 16, "blue": 4, "purple": 5, "yellow": 5, "stamina": 20 },
+    "4": { "green": 16, "blue": 5, "purple": 6, "yellow": 6, "stamina": 20 },
+    "5": { "green": 16, "blue": 2, "purple": 2, "yellow": 2, "stamina": 20 },
+    "6": { "green": 16, "blue": 2, "purple": 3, "yellow": 3, "stamina": 20 }
   },
   "omamori": {
     "1": { "green": 0, "blue": 0, "purple": 0, "yellow": 5, "yellowMin": 5, "yellowMax": 5, "stamina": 40 },

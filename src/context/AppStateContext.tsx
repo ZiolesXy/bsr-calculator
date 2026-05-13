@@ -8,11 +8,11 @@ const defaultWeaponState: WeaponState = defaultAppState.weapon as WeaponState
 
 const defaultSkillState: SkillState = defaultAppState.skill as SkillState
 
-export const totalPlannerCharacterPreset: CharacterState = defaultAppState.totalPlanner.character as CharacterState
+export const totalPlannerCharacterPreset: CharacterState = defaultAppState.character as CharacterState
 
-export const totalPlannerWeaponPreset: WeaponState = defaultAppState.totalPlanner.weapon as WeaponState
+export const totalPlannerWeaponPreset: WeaponState = defaultAppState.weapon as WeaponState
 
-export const totalPlannerSkillPreset: SkillState = defaultAppState.totalPlanner.skill as SkillState
+export const totalPlannerSkillPreset: SkillState = defaultAppState.skill as SkillState
 
 type StateContextValue<T> = {
   state: T

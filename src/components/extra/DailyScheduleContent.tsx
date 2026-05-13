@@ -7,7 +7,7 @@ import {
   totalPlannerWeaponPreset,
 } from '../../context/AppStateContext'
 import characterPack from '../../data/character-pack.json'
-import defaultExtraInput from '../../data/default-extra-input.json'
+import defaultAppState from '../../data/default-app-state.json'
 import defaultSettings from '../../data/default-settings.json'
 import farmingRewards from '../../data/farming-rewards.json'
 import { useCharacterCalculator } from '../../hooks/useCharacterCalculator'
@@ -889,15 +889,15 @@ const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, 
 export function DailyScheduleContent() {
   const [view, setView] = useState<DailyView>('entry')
   const [isMobileView, setIsMobileView] = useState(false)
-  const [setupMode, setSetupMode] = useState<SetupMode>(defaultExtraInput.setupMode as SetupMode)
-  const [manualSelection, setManualSelection] = useState<ManualSelection>(defaultExtraInput.manualSelection as ManualSelection)
-  const [characterFarmLevel, setCharacterFarmLevel] = useState(defaultExtraInput.characterFarmLevel)
+  const [setupMode, setSetupMode] = useState<SetupMode>(defaultAppState.extraInput.setupMode as SetupMode)
+  const [manualSelection, setManualSelection] = useState<ManualSelection>(defaultAppState.extraInput.manualSelection as ManualSelection)
+  const [characterFarmLevel, setCharacterFarmLevel] = useState(defaultAppState.extraInput.characterFarmLevel)
   const [schedule, setSchedule] = useState<ScheduleItem[]>([])
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(defaultExtraInput.selectedCharacterId)
-  const [packCharacterState, setPackCharacterState] = useState(defaultExtraInput.packCharacterState as typeof totalPlannerCharacterPreset)
-  const [packWeaponState, setPackWeaponState] = useState(defaultExtraInput.packWeaponState as typeof totalPlannerWeaponPreset)
-  const [packSkillState, setPackSkillState] = useState(defaultExtraInput.packSkillState as typeof totalPlannerSkillPreset)
-  const [packKansOwned, setPackKansOwned] = useState(defaultExtraInput.packKansOwned)
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(defaultAppState.extraInput.selectedCharacterId)
+  const [packCharacterState, setPackCharacterState] = useState(totalPlannerCharacterPreset)
+  const [packWeaponState, setPackWeaponState] = useState(totalPlannerWeaponPreset)
+  const [packSkillState, setPackSkillState] = useState(totalPlannerSkillPreset)
+  const [packKansOwned, setPackKansOwned] = useState(defaultAppState.extraInput.packKansOwned)
   const [message, setMessage] = useState('')
   const [exportResult, setExportResult] = useState<ExportResult>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
