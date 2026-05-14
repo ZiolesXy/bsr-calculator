@@ -287,7 +287,7 @@ function mergeSchedule(current: ScheduleItem[], incoming: ScheduleItem[]) {
 function createStoredSchedule(schedule: ScheduleItem[]): StoredSchedule {
   return {
     schedule,
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: new Date().toLocaleString(),
   }
 }
 

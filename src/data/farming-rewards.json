@@ -3,10 +3,10 @@
     "1": 22800,
     "2": 27300,
     "3": 31900,
-    "4": 42200,
-    "5": 47560,
-    "6": 52890,
-    "No Bonus": 52890
+    "4": 36400,
+    "5": 41000,
+    "6": 45600,
+    "Bonus": 52890
   },
 
   "essence": {
@@ -16,7 +16,7 @@
     "4": { "green": 0, "blue": 4, "purple": 0, "yellow": 0, "stamina": 20 },
     "5": { "green": 2, "blue": 4, "purple": 0, "yellow": 0, "stamina": 20 },
     "6": { "green": 0, "blue": 2, "purple": 1, "yellow": 0, "stamina": 20 },
-    "No Bonus": { "green": 0, "blue": 2, "purple": 1, "yellow": 0, "stamina": 20 }
+    "Bonus": { "green": 0, "blue": 2, "purple": 1, "yellow": 0, "stamina": 20 }
   },
   "art": {
     "1": { "green": 6, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
@@ -25,7 +25,7 @@
     "4": { "green": 6, "blue": 3, "purple": 0, "yellow": 0, "stamina": 20 },
     "5": { "green": 3, "blue": 2, "purple": 1, "yellow": 0, "stamina": 20 },
     "6": { "green": 4, "blue": 3, "purple": 1, "yellow": 0, "stamina": 20 },
-    "No Bonus": { "green": 4, "blue": 3, "purple": 1, "yellow": 0, "stamina": 20 }
+    "Bonus": { "green": 8, "blue": 3, "purple": 1, "yellow": 0, "stamina": 20 }
   },
   "hammer": {
     "1": { "green": 8, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
@@ -34,25 +34,25 @@
     "4": { "green": 2, "blue": 4, "purple": 0, "yellow": 0, "stamina": 20 },
     "5": { "green": 0, "blue": 2, "purple": 1, "yellow": 0, "stamina": 20 },
     "6": { "green": 0, "blue": 0, "purple": 2, "yellow": 0, "stamina": 20 },
-    "No Bonus": { "green": 0, "blue": 0, "purple": 2, "yellow": 0, "stamina": 20 }
+    "Bonus": { "green": 0, "blue": 0, "purple": 2, "yellow": 0, "stamina": 20 }
   },
   "book": {
-    "1": { "green": 20, "blue": 10, "purple": 0, "yellow": 0, "stamina": 20 },
-    "2": { "green": 21, "blue": 12, "purple": 0, "yellow": 0, "stamina": 20 },
-    "3": { "green": 20, "blue": 4, "purple": 3, "yellow": 0, "stamina": 20 },
-    "4": { "green": 20, "blue": 6, "purple": 3, "yellow": 0, "stamina": 20 },
-    "5": { "green": 20, "blue": 5, "purple": 2, "yellow": 1, "stamina": 20 },
-    "6": { "green": 20, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 },
-    "No Bonus": { "green": 0, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 }
+    "1": { "green": 0, "blue": 10, "purple": 0, "yellow": 0, "stamina": 20 },
+    "2": { "green": 1, "blue": 12, "purple": 0, "yellow": 0, "stamina": 20 },
+    "3": { "green": 0, "blue": 4, "purple": 3, "yellow": 0, "stamina": 20 },
+    "4": { "green": 0, "blue": 6, "purple": 3, "yellow": 0, "stamina": 20 },
+    "5": { "green": 0, "blue": 5, "purple": 2, "yellow": 1, "stamina": 20 },
+    "6": { "green": 0, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 },
+    "Bonus": { "green": 20, "blue": 4, "purple": 3, "yellow": 1, "stamina": 20 }
   },
   "tamahagane": {
-    "1": { "green": 16, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
-    "2": { "green": 22, "blue": 6, "purple": 0, "yellow": 0, "stamina": 20 },
-    "3": { "green": 16, "blue": 4, "purple": 5, "yellow": 5, "stamina": 20 },
-    "4": { "green": 16, "blue": 5, "purple": 6, "yellow": 6, "stamina": 20 },
-    "5": { "green": 16, "blue": 2, "purple": 2, "yellow": 2, "stamina": 20 },
-    "6": { "green": 16, "blue": 2, "purple": 3, "yellow": 3, "stamina": 20 },
-    "No Bonus": { "green": 0, "blue": 2, "purple": 3, "yellow": 3, "stamina": 20 }
+    "1": { "green": 0, "blue": 12, "purple": 0, "yellow": 0, "stamina": 20 },
+    "2": { "green": 6, "blue": 13, "purple": 0, "yellow": 0, "stamina": 20 },
+    "3": { "green": 0, "blue": 4, "purple": 5, "yellow": 5, "stamina": 20 },
+    "4": { "green": 0, "blue": 5, "purple": 6, "yellow": 6, "stamina": 20 },
+    "5": { "green": 0, "blue": 2, "purple": 2, "yellow": 2, "stamina": 20 },
+    "6": { "green": 0, "blue": 2, "purple": 3, "yellow": 3, "stamina": 20 },
+    "Bonus": { "green": 16, "blue": 2, "purple": 3, "yellow": 3, "stamina": 20 }
   },
   "omamori": {
     "1": { "green": 0, "blue": 0, "purple": 0, "yellow": 5, "yellowMin": 5, "yellowMax": 5, "stamina": 40 },
@@ -61,6 +61,6 @@
     "4": { "green": 0, "blue": 0, "purple": 0, "yellow": 6, "yellowMin": 6, "yellowMax": 6, "stamina": 40 },
     "5": { "green": 0, "blue": 0, "purple": 0, "yellow": 7, "yellowMin": 7, "yellowMax": 7, "stamina": 40 },
     "6": { "green": 0, "blue": 0, "purple": 0, "yellow": 8, "yellowMin": 8, "yellowMax": 8, "stamina": 40 },
-    "No Bonus": { "green": 0, "blue": 0, "purple": 0, "yellow": 8, "yellowMin": 8, "yellowMax": 8, "stamina": 40 }
+    "Bonus": { "green": 0, "blue": 0, "purple": 0, "yellow": 8, "yellowMin": 8, "yellowMax": 8, "stamina": 40 }
   }
 }
