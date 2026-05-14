@@ -69,3 +69,17 @@ export type SkillState = {
   ownedOmamori: number
   passiveLevels: PassiveLevelsState
 }
+
+export type DailyScheduleInputState = {
+  setupMode: 'manual' | 'character-pack'
+  manualSelection: {
+    category: 'art' | 'book' | 'essence' | 'kans' | 'hammer' | 'omamori' | 'tamahagane'
+    color: ResourceColor
+    farmLevel: string
+    target: number
+  }
+  characterFarmLevel: string
+  selectedCharacterId: string | null
+  packKansOwned: number
+  dailyStamina: number
+}

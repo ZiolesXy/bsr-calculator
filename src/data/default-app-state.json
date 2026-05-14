@@ -27,6 +27,7 @@
   },
   "extraInput": {
     "setupMode": "manual",
+    "dailyStamina": 240,
     "manualSelection": {
       "category": "book",
       "color": "yellow",

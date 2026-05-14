@@ -43,6 +43,7 @@ type ScheduleItem = {
 type StoredSchedule = {
   schedule: ScheduleItem[]
   lastUpdated: string
+  dailyStamina: number
 }
 
 type ExportResult = {
@@ -78,15 +79,36 @@ function normalizeAmount(value: string, fallback: number) {
   return Math.max(0, Math.floor(amount))
 }
 
-function readSavedSchedule(): ScheduleItem[] {
+function normalizeStamina(value: string | number, fallback: number) {
+  const amount = Number(value)
+  if (!Number.isFinite(amount)) return fallback
+  return Math.max(0, Math.floor(amount))
+}
+
+function formatEstimatedDuration(days: number) {
+  if (!Number.isFinite(days) || days <= 0) return 'Selesai'
+
+  const totalHours = Math.max(1, Math.ceil(days * 24))
+  const resultDays = Math.floor(totalHours / 24)
+  const hours = totalHours % 24
+
+  if (resultDays <= 0) return `${hours} jam`
+  if (hours === 0) return `${resultDays} hari`
+  return `${resultDays} hari ${hours} jam`
+}
+
+function readSavedSchedule(): { schedule: ScheduleItem[]; dailyStamina: number } {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
+    if (!raw) return { schedule: [], dailyStamina: defaultAppState.extraInput.dailyStamina }
 
     const parsed = JSON.parse(raw) as Partial<StoredSchedule>
-    return Array.isArray(parsed.schedule) ? sanitizeImportedSchedule(parsed.schedule) : []
+    return {
+      schedule: Array.isArray(parsed.schedule) ? sanitizeImportedSchedule(parsed.schedule) : [],
+      dailyStamina: readStoredDailyStamina(parsed.dailyStamina),
+    }
   } catch {
-    return []
+    return { schedule: [], dailyStamina: defaultAppState.extraInput.dailyStamina }
   }
 }
 
@@ -284,10 +306,11 @@ function mergeSchedule(current: ScheduleItem[], incoming: ScheduleItem[]) {
   }, current)
 }
 
-function createStoredSchedule(schedule: ScheduleItem[]): StoredSchedule {
+function createStoredSchedule(schedule: ScheduleItem[], dailyStamina: number): StoredSchedule {
   return {
     schedule,
     lastUpdated: new Date().toLocaleString(),
+    dailyStamina,
   }
 }
 
@@ -356,6 +379,10 @@ function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
   }, [])
 }
 
+function readStoredDailyStamina(raw: unknown) {
+  return normalizeStamina(raw as number, defaultAppState.extraInput.dailyStamina)
+}
+
 function createGreenValueScheduleItem(category: 'art' | 'essence' | 'hammer', farmLevel: string, target: number) {
   return target > 0 ? createScheduleItem(category, farmLevel, 'green', target) : null
 }
@@ -404,8 +431,10 @@ type ManualSetupProps = {
   selectedRewardAmount: number
   selectedRewardUnit: string
   selectedStamina: number
+  dailyStamina: number
   selection: ManualSelection
   onGenerate: () => void
+  onDailyStaminaChange: (value: number) => void
   onSelectionChange: (selection: Partial<ManualSelection>) => void
 }
 
@@ -416,8 +445,10 @@ const ManualSetup = memo(function ManualSetup({
   selectedRewardAmount,
   selectedRewardUnit,
   selectedStamina,
+  dailyStamina,
   selection,
   onGenerate,
+  onDailyStaminaChange,
   onSelectionChange,
 }: ManualSetupProps) {
   return (
@@ -454,6 +485,10 @@ const ManualSetup = memo(function ManualSetup({
         <label className="field">
           Target
           <input value={selection.target} min={0} type="number" onChange={(event) => onSelectionChange({ target: normalizeAmount(event.target.value, 0) })} />
+        </label>
+        <label className="field">
+          Daily stamina
+          <input value={dailyStamina} min={0} type="number" onChange={(event) => onDailyStaminaChange(normalizeStamina(event.target.value, dailyStamina))} />
         </label>
         <div className="farming-actions">
           <button type="button" className="mini-tab is-active" onClick={onGenerate}>
@@ -673,6 +708,7 @@ type SetupViewProps = {
   availableLevels: string[]
   isManualAutoConvertCategory: boolean
   characterFarmLevel: string
+  dailyStamina: number
   kansOwned: number
   totalKansNeeded: number
   manualSelection: ManualSelection
@@ -688,6 +724,7 @@ type SetupViewProps = {
   onBack: () => void
   onCharacterChange: React.Dispatch<React.SetStateAction<CharacterState>>
   onCharacterFarmLevelChange: (farmLevel: string) => void
+  onDailyStaminaChange: (value: number) => void
   onGenerateCharacterPack: () => void
   onGenerateManual: () => void
   onKansOwnedChange: React.Dispatch<React.SetStateAction<number>>
@@ -717,6 +754,17 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
             Back
           </button>
         </div>
+        <div className="control-grid">
+          <label className="field">
+            Daily stamina
+            <input
+              value={props.dailyStamina}
+              min={0}
+              type="number"
+              onChange={(event) => props.onDailyStaminaChange(normalizeStamina(event.target.value, props.dailyStamina))}
+            />
+          </label>
+        </div>
       </section>
 
       {props.setupMode === 'manual' ? (
@@ -727,8 +775,10 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
           selectedRewardAmount={props.selectedRewardAmount}
           selectedRewardUnit={props.selectedRewardUnit}
           selectedStamina={props.selectedStamina}
+          dailyStamina={props.dailyStamina}
           selection={props.manualSelection}
           onGenerate={props.onGenerateManual}
+          onDailyStaminaChange={props.onDailyStaminaChange}
           onSelectionChange={props.onManualSelectionChange}
         />
       ) : (
@@ -759,6 +809,7 @@ type ScheduleViewProps = {
   importInput: React.ReactNode
   message: string
   isMobileView: boolean
+  dailyStamina: number
   schedule: ScheduleItem[]
   onCloseExportResult: () => void
   onEntry: () => void
@@ -779,6 +830,7 @@ const ScheduleView = memo(function ScheduleView({
   importInput,
   message,
   isMobileView,
+  dailyStamina,
   schedule,
   onCloseExportResult,
   onEntry,
@@ -834,6 +886,7 @@ const ScheduleView = memo(function ScheduleView({
             <ScheduleCard
               key={item.id}
               item={item}
+              dailyStamina={dailyStamina}
               onRemove={onRemove}
               onTargetEdit={onTargetEdit}
               onUpdateProgress={onUpdateProgress}
@@ -847,16 +900,28 @@ const ScheduleView = memo(function ScheduleView({
 
 type ScheduleCardProps = {
   item: ScheduleItem
+  dailyStamina: number
   onRemove: (id: string) => void
   onTargetEdit: (id: string) => void
   onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
 }
 
-const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, onUpdateProgress }: ScheduleCardProps) {
+const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, onTargetEdit, onUpdateProgress }: ScheduleCardProps) {
   const progressPercent = item.target === 0 ? 100 : Math.min(100, Math.round((item.progress / item.target) * 100))
   const canAddProgress = canUseFarmAddButton(item)
   const progressUnitLabel = item.progressUnit === 'farm' ? ' farm' : ''
   const customRewardAmount = getFarmRewardAmount(item)
+  const remainingTarget = Math.max(0, item.target - item.progress)
+  const perRunAmount = Math.max(0, customRewardAmount)
+  const remainingClicks = perRunAmount > 0 ? Math.ceil(remainingTarget / perRunAmount) : 0
+  const staminaPerRun = item.category === 'kans' ? 0 : (farmingRewards[item.category] as unknown as FarmingRewardTable)?.[item.farmLevel]?.stamina ?? 0
+  const remainingStamina = remainingClicks * staminaPerRun
+  const estimatedDays = dailyStamina > 0 ? remainingStamina / dailyStamina : Number.POSITIVE_INFINITY
+  const estimateLabel = remainingClicks === 0
+    ? 'Selesai'
+    : dailyStamina > 0
+      ? formatEstimatedDuration(estimatedDays)
+      : 'Isi daily stamina'
 
   return (
     <article className="farming-card">
@@ -872,6 +937,7 @@ const ScheduleCard = memo(function ScheduleCard({ item, onRemove, onTargetEdit, 
       </div>
       <div className="farming-card__footer">
         <span>{formatNumber(item.progress)} / {formatNumber(item.target)}{progressUnitLabel}</span>
+        <span>Sisa klik {formatNumber(remainingClicks)} | Estimasi {estimateLabel}</span>
         {canAddProgress && (
           <>
             <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, 1)}>+1</button>
@@ -892,6 +958,7 @@ export function DailyScheduleContent() {
   const [setupMode, setSetupMode] = useState<SetupMode>(defaultAppState.extraInput.setupMode as SetupMode)
   const [manualSelection, setManualSelection] = useState<ManualSelection>(defaultAppState.extraInput.manualSelection as ManualSelection)
   const [characterFarmLevel, setCharacterFarmLevel] = useState(defaultAppState.extraInput.characterFarmLevel)
+  const [dailyStamina, setDailyStamina] = useState(defaultAppState.extraInput.dailyStamina)
   const [schedule, setSchedule] = useState<ScheduleItem[]>([])
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(defaultAppState.extraInput.selectedCharacterId)
   const [packCharacterState, setPackCharacterState] = useState(totalPlannerCharacterPreset)
@@ -949,24 +1016,26 @@ export function DailyScheduleContent() {
 
   const saveSchedule = useCallback(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(createStoredSchedule(schedule)))
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(createStoredSchedule(schedule, dailyStamina)))
       setMessage('Schedule saved.')
     } catch {
       setMessage('Save failed. Storage is not available.')
     }
-  }, [schedule])
+  }, [dailyStamina, schedule])
 
   const loadFromStorage = useCallback(() => {
-    const savedSchedule = readSavedSchedule()
-    setSchedule(savedSchedule)
+    const saved = readSavedSchedule()
+    setSchedule(saved.schedule)
+    setDailyStamina(saved.dailyStamina)
     setView('schedule')
-    setMessage(savedSchedule.length > 0 ? 'Schedule loaded.' : 'Tidak ada data tersimpan.')
+    setMessage(saved.schedule.length > 0 ? 'Schedule loaded.' : 'Tidak ada data tersimpan.')
   }, [])
 
   const importSchedule = useCallback(async (file: File) => {
     try {
       const parsed = JSON.parse(await file.text()) as Partial<StoredSchedule>
       setSchedule(sanitizeImportedSchedule(parsed.schedule))
+      setDailyStamina(readStoredDailyStamina(parsed.dailyStamina))
       setView('schedule')
       setMessage('Schedule imported.')
     } catch {
@@ -991,7 +1060,7 @@ export function DailyScheduleContent() {
 
   const exportSchedule = useCallback(async () => {
     try {
-      const data = JSON.stringify(createStoredSchedule(schedule), null, 2)
+      const data = JSON.stringify(createStoredSchedule(schedule, dailyStamina), null, 2)
 
       if (Capacitor.isNativePlatform()) {
         const date = new Date().toISOString().split('T')[0]
@@ -1021,7 +1090,7 @@ export function DailyScheduleContent() {
     } catch {
       window.alert('Export failed.')
     }
-  }, [schedule])
+  }, [dailyStamina, schedule])
 
   const shareExport = useCallback(async () => {
     if (!exportResult) return
@@ -1162,6 +1231,7 @@ export function DailyScheduleContent() {
           availableColors={availableColors}
           availableLevels={availableLevels}
           characterFarmLevel={characterFarmLevel}
+          dailyStamina={dailyStamina}
           isManualAutoConvertCategory={isManualAutoConvertCategory}
           kansOwned={packKansOwned}
           totalKansNeeded={totalKansNeeded}
@@ -1178,6 +1248,7 @@ export function DailyScheduleContent() {
           onBack={goToEntry}
           onCharacterChange={setPackCharacterState}
           onCharacterFarmLevelChange={setCharacterFarmLevel}
+          onDailyStaminaChange={setDailyStamina}
           onKansOwnedChange={setPackKansOwned}
           onGenerateCharacterPack={generateCharacterPack}
           onGenerateManual={generateManualSchedule}
@@ -1195,6 +1266,7 @@ export function DailyScheduleContent() {
           importInput={importInput}
           message={message}
           isMobileView={isMobileView}
+          dailyStamina={dailyStamina}
           schedule={schedule}
           onCloseExportResult={() => setExportResult(null)}
           onEntry={goToEntry}
