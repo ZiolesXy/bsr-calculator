@@ -23,8 +23,9 @@ import { SelectField } from '../common/SelectField'
 type FarmingCategory = keyof typeof farmingRewards
 type FarmingLevel = keyof (typeof farmingRewards)[FarmingCategory]
 type FarmingRewardRow = { green: number; blue: number; purple: number; yellow: number; stamina: number }
+type KansRewardRow = { kans: number; stamina: number }
 type FarmingRewardTable = Record<string, FarmingRewardRow>
-type KansRewardTable = Record<string, number>
+type KansRewardTable = Record<string, KansRewardRow>
 type DailyView = 'entry' | 'setup' | 'schedule'
 type SetupMode = 'manual' | 'character-pack'
 
@@ -138,7 +139,7 @@ function getGreenEquivalentReward(category: FarmingCategory, farmLevel: string) 
 function createScheduleItem(category: FarmingCategory, farmLevel: string, color: ResourceColor, target: number, progress = 0): ScheduleItem {
   const reward = farmingRewards[category]
   if ((category as string) === 'kans') {
-    const kansPerFarm = (farmingRewards.kans as unknown as KansRewardTable)[farmLevel] ?? 0
+    const kansPerFarm = (farmingRewards.kans as unknown as KansRewardTable)[farmLevel]?.kans ?? 0
     return {
       category,
       color: 'green',
@@ -169,16 +170,14 @@ function createScheduleItem(category: FarmingCategory, farmLevel: string, color:
   const rewardAmount = isAutoConvertCategory(category) ? getGreenEquivalentReward(category, farmLevel) : (row[normalizedColor] ?? 0)
   const normalizedTarget = isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: target }) : target
   const normalizedProgress = isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: progress }) : progress
-  const isKans = category === 'kans'
-
   return {
     category,
     color: normalizedColor,
     farmLevel,
     id: createItemId(category, farmLevel, normalizedColor),
-    name: isKans || isAutoConvertCategory(category) ? `${categoryLabels[category]} value` : `${normalizedColor} ${categoryLabels[category]}`,
-    progressUnit: isKans || isAutoConvertCategory(category) ? 'value' : 'item',
-    source: `${categoryLabels[category]} stage ${farmLevel} (${row.stamina} stamina, avg ${rewardAmount}${isKans || isAutoConvertCategory(category) ? ' value' : ''})`,
+    name: isAutoConvertCategory(category) ? `${categoryLabels[category]} value` : `${normalizedColor} ${categoryLabels[category]}`,
+    progressUnit: isAutoConvertCategory(category) ? 'value' : 'item',
+    source: `${categoryLabels[category]} stage ${farmLevel} (${row.stamina} stamina, avg ${rewardAmount}${isAutoConvertCategory(category) ? ' value' : ''})`,
     target: normalizedTarget,
     progress: normalizedProgress,
   }
@@ -201,7 +200,7 @@ function getRewardSummary(category: FarmingCategory, farmLevel: string, color: R
 
   if (category === 'kans') {
     return {
-      amount: (farmingRewards.kans as unknown as KansRewardTable)[farmLevel] ?? 0,
+      amount: (farmingRewards.kans as unknown as KansRewardTable)[farmLevel]?.kans ?? 0,
       unit: 'kans/farm',
     }
   }
@@ -232,7 +231,8 @@ function createExpFarmScheduleItem(category: 'book' | 'tamahagane', farmLevel: s
 }
 
 function createKansScheduleItem(farmLevel: string, missingKans: number): ScheduleItem | null {
-  const kansPerFarm = (farmingRewards.kans as unknown as KansRewardTable)[farmLevel] ?? 0
+  const kansRow = (farmingRewards.kans as unknown as KansRewardTable)[farmLevel]
+  const kansPerFarm = kansRow?.kans ?? 0
   if (missingKans <= 0 || kansPerFarm <= 0) return null
 
   return {
@@ -242,7 +242,7 @@ function createKansScheduleItem(farmLevel: string, missingKans: number): Schedul
     id: createItemId('kans', farmLevel, 'green'),
     name: 'Kans value',
     progressUnit: 'value',
-    source: `Kans stage ${farmLevel} (${kansPerFarm} kans/farm)`,
+    source: `Kans stage ${farmLevel} (${kansRow?.stamina ?? 0} stamina, avg ${kansPerFarm} kans/farm)`,
     target: missingKans,
     progress: 0,
   }
@@ -259,7 +259,7 @@ function parseScheduleItemId(id: string) {
 
 function getFarmRewardAmount(item: ScheduleItem) {
   if (item.progressUnit === 'farm') return 1
-  if (item.category === 'kans') return (farmingRewards.kans as unknown as KansRewardTable)[item.farmLevel] ?? 0
+  if (item.category === 'kans') return (farmingRewards.kans as unknown as KansRewardTable)[item.farmLevel]?.kans ?? 0
   if (isAutoConvertCategory(item.category)) return getGreenEquivalentReward(item.category, item.farmLevel)
 
   const reward = (farmingRewards[item.category] as unknown as FarmingRewardTable | undefined)?.[item.farmLevel]
@@ -914,7 +914,7 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
   const remainingTarget = Math.max(0, item.target - item.progress)
   const perRunAmount = Math.max(0, customRewardAmount)
   const remainingClicks = perRunAmount > 0 ? Math.ceil(remainingTarget / perRunAmount) : 0
-  const staminaPerRun = item.category === 'kans' ? 0 : (farmingRewards[item.category] as unknown as FarmingRewardTable)?.[item.farmLevel]?.stamina ?? 0
+  const staminaPerRun = (farmingRewards[item.category] as unknown as FarmingRewardTable | KansRewardTable)?.[item.farmLevel]?.stamina ?? 0
   const remainingStamina = remainingClicks * staminaPerRun
   const estimatedDays = dailyStamina > 0 ? remainingStamina / dailyStamina : Number.POSITIVE_INFINITY
   const estimateLabel = remainingClicks === 0
@@ -935,17 +935,21 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
       <div className="farming-progress" aria-label={`${item.name} progress ${progressPercent}%`}>
         <span style={{ width: `${progressPercent}%` }} />
       </div>
-      <div className="farming-card__footer">
+      <div className="farming-card__details">
         <span>{formatNumber(item.progress)} / {formatNumber(item.target)}{progressUnitLabel}</span>
         <span>Sisa klik {formatNumber(remainingClicks)} | Estimasi {estimateLabel}</span>
-        {canAddProgress && (
-          <>
-            <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, 1)}>+1</button>
-            {item.progressUnit !== 'farm' && (
-              <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, customRewardAmount, true)}>+Custom ({formatNumber(customRewardAmount)})</button>
-            )}
-          </>
-        )}
+      </div>
+      <div className="farming-card__actions">
+        <div className="farming-card__buttons">
+          {canAddProgress && (
+            <>
+              <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, 1)}>+1</button>
+              {item.progressUnit !== 'farm' && (
+                <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, customRewardAmount, true)}>+Custom ({formatNumber(customRewardAmount)})</button>
+              )}
+            </>
+          )}
+        </div>
         <button type="button" className="mini-tab" onClick={() => onTargetEdit(item.id)}>Edit target</button>
       </div>
     </article>
@@ -981,7 +985,9 @@ export function DailyScheduleContent() {
   const selectedFarmLevel = availableLevels.includes(manualSelection.farmLevel) ? manualSelection.farmLevel : availableLevels[0] ?? '1'
   const selectedRewardBase = farmingRewards[manualSelection.category]
   const selectedKansReward = manualSelection.category === 'kans'
-    ? (farmingRewards.kans as unknown as KansRewardTable)[selectedFarmLevel] ?? (farmingRewards.kans as unknown as KansRewardTable)[availableLevels[0]] ?? 0
+    ? (farmingRewards.kans as unknown as KansRewardTable)[selectedFarmLevel]?.kans
+      ?? (farmingRewards.kans as unknown as KansRewardTable)[availableLevels[0]]?.kans
+      ?? 0
     : 0
   const selectedReward = typeof selectedRewardBase === 'object' && selectedRewardBase !== null
     ? (selectedRewardBase as unknown as FarmingRewardTable)[selectedFarmLevel] ?? (selectedRewardBase as unknown as FarmingRewardTable)[availableLevels[0]]
