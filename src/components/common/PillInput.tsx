@@ -1,4 +1,5 @@
 import type { ResourceColor } from '../../types'
+import { Input } from '../ui/Input'
 
 type PillInputProps = {
   label: string
@@ -8,15 +9,5 @@ type PillInputProps = {
 }
 
 export function PillInput({ label, color, value, onChange }: PillInputProps) {
-  return (
-    <label className={`pill-input pill-input--${color}`}>
-      <span>{label}</span>
-      <input
-        type="number"
-        min="0"
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value) || 0)}
-      />
-    </label>
-  )
+  return <Input label={label} className={`pill-input pill-input--${color}`} type="number" min="0" value={value} onChange={(event) => onChange(Number(event.target.value) || 0)} />
 }

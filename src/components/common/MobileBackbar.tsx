@@ -1,4 +1,6 @@
 import { memo } from 'react'
+import { Button } from '../ui/Button'
+import { Card } from '../ui/Card'
 
 type MobileBackbarProps = {
   backLabel?: string
@@ -8,15 +10,15 @@ type MobileBackbarProps = {
 
 function MobileBackbarComponent({ backLabel = 'Back to main menu', currentLabel, onBack }: MobileBackbarProps) {
   return (
-    <section className="mobile-backbar panel panel--wide">
-      <button type="button" className="mobile-backbar__button" onClick={onBack}>
+    <Card className="mobile-backbar">
+      <Button variant="ghost" onClick={onBack} className="mobile-backbar__button">
         {backLabel}
-      </button>
+      </Button>
       <div>
-        <p className="section-tag">Current Page</p>
+        <p className="ui-eyebrow">Current Page</p>
         <strong>{currentLabel}</strong>
       </div>
-    </section>
+    </Card>
   )
 }
 

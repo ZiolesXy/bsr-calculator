@@ -2,7 +2,6 @@ import { startTransition, useCallback, useEffect, useMemo, useState } from 'reac
 import { CharacterTab } from './components/character/CharacterTab'
 import { MobileBackbar } from './components/common/MobileBackbar'
 import { MobileMenu } from './components/common/MobileMenu'
-import { TabNavigation } from './components/common/TabNavigation'
 import { ExtraTab } from './components/extra/ExtraTab'
 import { SettingsTab } from './components/settings/SettingsTab'
 import { SkillTab } from './components/skill/SkillTab'
@@ -11,11 +10,15 @@ import { AppStateProvider } from './context/AppStateContext'
 import { useResponsive } from './hooks/useResponsive'
 import { useTheme } from './hooks/useTheme'
 import { useTotalPlannerInit } from './hooks/useTotalPlannerInit'
+import { MobileNav } from './components/ui/MobileNav'
+import { Section } from './components/ui/Section'
 import type {
   ExtraTabId,
   TabDefinition,
   TabId,
 } from './types'
+import { Card } from './components/ui/Card'
+import { Sidebar } from './components/ui/Sidebar'
 import './App.css'
 
 const tabs: Array<TabDefinition<TabId>> = [
@@ -64,22 +67,14 @@ function ExtraLoadingContent() {
 
 function MobileExtraMenu({ onExtraTabChange }: { onExtraTabChange: (tabId: ExtraTabId) => void }) {
   return (
-    <section className="mobile-menu panel panel--wide">
-      <div className="panel__header">
-        <div>
-          <p className="section-tag">Extra</p>
-          <h2>Pilih tools extra</h2>
-        </div>
-      </div>
-      <div className="mobile-menu__grid">
-        {extraTabs.map((tab) => (
-          <button key={tab.id} type="button" className="mobile-menu__card" onClick={() => onExtraTabChange(tab.id)}>
-            <small>{tab.eyebrow}</small>
-            <strong>{tab.label}</strong>
-          </button>
-        ))}
-      </div>
-    </section>
+    <Section
+      eyebrow="Extra"
+      title="Pilih tools extra"
+      description="Menu ini memisahkan planner utama, overview, dan daily schedule."
+      className="mobile-menu"
+    >
+      <MobileNav onChange={onExtraTabChange} tabs={extraTabs} />
+    </Section>
   )
 }
 
@@ -166,6 +161,7 @@ function AppLayout() {
     () => extraTabs.find((tab) => tab.id === activeExtraTab)?.label ?? '',
     [activeExtraTab],
   )
+  const activeEyebrow = useMemo(() => tabs.find((tab) => tab.id === activeTab)?.eyebrow ?? '', [activeTab])
   const handleBackToMenu = useCallback(() => {
     if (isMobile && activeTab === 'extra' && mobileExtraScreen === 'page') {
       setMobileExtraScreen('menu')
@@ -183,19 +179,49 @@ function AppLayout() {
   }, [isMobile])
   return (
     <div className="app-shell">
-      <header className="hero-panel">
-        <div>
-          <p className="hero-panel__eyebrow">BSR Resource Planner</p>
-          <h1>Build modern progress calculators materials from your saved data.</h1>
-        </div>
-      </header>
-
-      {!isMobile && <TabNavigation tabs={tabs} activeTab={activeTab} onChange={openTab} />}
+      {!isMobile && (
+        <Sidebar
+          activeTab={activeTab}
+          description="This is a material calculator app for character builds in the game Bleach: Soul Resonance."
+          footer={
+            <div className="sidebar-meta">
+              <div>
+                <p className="ui-eyebrow">Active Theme</p>
+                <strong>{activeTheme.label}</strong>
+              </div>
+              <p>{activeTheme.description}</p>
+            </div>
+          }
+          onChange={openTab}
+          tabs={tabs}
+          title="BSR Calculator"
+        />
+      )}
 
       {isMobile && mobileScreen === 'menu' && <MobileMenu tabs={tabs} onSelect={openTab} />}
 
       {showMobilePage && (
-        <main className={`content-grid ${isMobile ? 'content-grid--mobile' : ''}`}>
+        <main className={`workspace ${isMobile ? 'workspace--mobile' : 'workspace--desktop'}`}>
+          <Card className="workspace-hero">
+            <div className="workspace-hero__copy">
+              <p className="ui-eyebrow">BSR Resource Planner</p>
+              <h1>{currentLabel}</h1>
+              <p className="workspace-hero__description">
+                {activeEyebrow || 'Modern resource calculator dashboard'}{isMobile ? ' - mobile view.' : ' - organized as a desktop workspace.'}
+              </p>
+            </div>
+            <div className="workspace-hero__meta">
+              <div className="workspace-pill">
+                <span>Theme</span>
+                <strong>{activeTheme.label}</strong>
+              </div>
+              <div className="workspace-pill">
+                <span>Mode</span>
+                <strong>{isMobile ? 'Mobile' : 'Desktop'}</strong>
+              </div>
+            </div>
+          </Card>
+
           {isMobile && (
             <MobileBackbar
               backLabel={activeTab === 'extra' && mobileExtraScreen === 'page' ? 'Back to Extra' : 'Back to main menu'}
@@ -203,17 +229,20 @@ function AppLayout() {
               onBack={handleBackToMenu}
             />
           )}
-          <ActiveTabContent
-            activeExtraTab={activeExtraTab}
-            activeTab={activeTab}
-            activeTheme={activeTheme}
-            isExtraLoading={isExtraLoading}
-            isMobile={isMobile}
-            mobileExtraScreen={mobileExtraScreen}
-            onExtraTabChange={openExtraTab}
-            onThemeChange={setThemeId}
-            themeCatalog={themeCatalog}
-          />
+
+          <div className={`content-grid ${isMobile ? 'content-grid--mobile' : ''}`}>
+            <ActiveTabContent
+              activeExtraTab={activeExtraTab}
+              activeTab={activeTab}
+              activeTheme={activeTheme}
+              isExtraLoading={isExtraLoading}
+              isMobile={isMobile}
+              mobileExtraScreen={mobileExtraScreen}
+              onExtraTabChange={openExtraTab}
+              onThemeChange={setThemeId}
+              themeCatalog={themeCatalog}
+            />
+          </div>
         </main>
       )}
     </div>

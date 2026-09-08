@@ -64,7 +64,13 @@ export function ExtraTab(props: ExtraTabProps) {
         </div>
 
         {props.showExtraTabNavigation !== false && (
-          <TabNavigation tabs={props.extraTabs} activeTab={props.activeExtraTab} onChange={props.onExtraTabChange} className="mini-tab-bar" />
+          <TabNavigation
+            tabs={props.extraTabs}
+            activeTab={props.activeExtraTab}
+            onChange={props.onExtraTabChange}
+            className="mini-tab-bar"
+            variant="compact"
+          />
         )}
 
         {activeContent}

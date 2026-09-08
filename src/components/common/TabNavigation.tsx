@@ -1,10 +1,12 @@
 import { memo } from 'react'
 import type { TabDefinition } from '../../types'
+import { Tabs } from '../ui/Tabs'
 
 type TabNavigationProps<T extends string> = {
   tabs: Array<TabDefinition<T>>
   activeTab: T
   onChange: (tabId: T) => void
+  variant?: 'default' | 'compact' | 'sidebar'
   className?: string
 }
 
@@ -12,23 +14,10 @@ function TabNavigationComponent<T extends string>({
   tabs,
   activeTab,
   onChange,
+  variant = 'default',
   className = 'tab-bar',
 }: TabNavigationProps<T>) {
-  return (
-    <nav className={className} aria-label="Navigation">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          className={`${className === 'tab-bar' ? 'tab-chip' : 'mini-tab'} ${activeTab === tab.id ? 'is-active' : ''}`}
-          onClick={() => onChange(tab.id)}
-        >
-          {className === 'tab-bar' && <small>{tab.eyebrow}</small>}
-          <span>{tab.label}</span>
-        </button>
-      ))}
-    </nav>
-  )
+  return <Tabs tabs={tabs} activeTab={activeTab} onChange={onChange} variant={variant} className={className} />
 }
 
 export const TabNavigation = memo(TabNavigationComponent) as typeof TabNavigationComponent

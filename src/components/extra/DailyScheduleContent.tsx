@@ -404,17 +404,20 @@ const EntryView = memo(function EntryView({ importInput, message, onImportClick,
           <span>Pilih cara mulai sebelum masuk ke schedule utama.</span>
         </div>
         <div className="farming-choice-grid">
-          <button type="button" className="mobile-menu__card" onClick={onLoad}>
+          <button type="button" className="schedule-launch-card" onClick={onLoad}>
             <small>Local storage</small>
             <strong>Load Data</strong>
+            <span>Restore last saved schedule</span>
           </button>
-          <button type="button" className="mobile-menu__card" onClick={onImportClick}>
+          <button type="button" className="schedule-launch-card" onClick={onImportClick}>
             <small>Upload</small>
             <strong>Import Data</strong>
+            <span>Load a JSON export</span>
           </button>
-          <button type="button" className="mobile-menu__card" onClick={onSetup}>
+          <button type="button" className="schedule-launch-card" onClick={onSetup}>
             <small>Manual atau pack</small>
             <strong>Pilih Kebutuhan</strong>
+            <span>Start from manual setup or character pack</span>
           </button>
         </div>
         {message && <p className="farming-hint">{message}</p>}
@@ -546,9 +549,10 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
       </div>
       <div className="farming-choice-grid">
         {characterPack.characters.map((character) => (
-          <button key={character.id} type="button" className="mobile-menu__card" onClick={() => onSelectCharacter(character.id)}>
+          <button key={character.id} type="button" className="schedule-pack-card" onClick={() => onSelectCharacter(character.id)}>
             <small>{character.description}</small>
             <strong>{character.name}</strong>
+            <span>Select preset</span>
           </button>
         ))}
       </div>

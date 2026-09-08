@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import type { TabDefinition, TabId } from '../../types'
+import { MobileNav } from '../ui/MobileNav'
 
 type MobileMenuProps = {
   tabs: Array<TabDefinition<TabId>>
@@ -8,21 +9,13 @@ type MobileMenuProps = {
 
 function MobileMenuComponent({ tabs, onSelect }: MobileMenuProps) {
   return (
-    <section className="mobile-menu panel">
-      <div className="panel__header">
-        <div>
-          <p className="section-tag">Main Menu</p>
-          <h2>Pilih halaman kalkulator</h2>
-        </div>
-      </div>
-      <div className="mobile-menu__grid">
-        {tabs.map((tab) => (
-          <button key={tab.id} type="button" className="mobile-menu__card" onClick={() => onSelect(tab.id)}>
-            <small>{tab.eyebrow}</small>
-            <strong>{tab.label}</strong>
-          </button>
-        ))}
-      </div>
+    <section className="mobile-menu">
+      <header className="mobile-menu__hero">
+        <p className="ui-eyebrow">Main Menu</p>
+        <h2>BSR Calculator</h2>
+        <p>This is a material calculator app for character builds in the game Bleach: Soul Resonance.</p>
+      </header>
+      <MobileNav onChange={onSelect} tabs={tabs} />
     </section>
   )
 }
