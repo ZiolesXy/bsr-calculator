@@ -931,7 +931,7 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
     <article className="farming-card">
       <div className="farming-card__header">
         <div>
-          <strong>{item.name}</strong>
+          <strong>{item.name} </strong>
           <span>{item.source}</span>
         </div>
         <button type="button" className="mini-tab" onClick={() => onRemove(item.id)}>Hapus</button>
