@@ -11,7 +11,7 @@ type SkillTabProps = {
   showOutput?: boolean
 }
 
-const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill'] as const
+const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill', 'entry-skill'] as const
 
 export function SkillTab({ showOutput = true }: SkillTabProps) {
   const { skillState: state, setSkillState } = useSkillState()

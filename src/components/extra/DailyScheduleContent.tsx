@@ -62,7 +62,7 @@ type ManualSelection = {
 const STORAGE_KEY = 'bsr-daily-farming-schedule'
 const resourceColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
 const autoConvertCategories: FarmingCategory[] = ['art', 'essence', 'hammer']
-const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill'] as const
+const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill', 'entry-skill'] as const
 
 const categoryLabels: Record<FarmingCategory, string> = {
   art: 'Art',
