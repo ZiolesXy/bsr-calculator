@@ -134,6 +134,7 @@ function AppLayout() {
 
   useEffect(() => {
     if (activeTab !== 'extra' || activeExtraTab !== 'total-planner' || (isMobile && mobileExtraScreen !== 'page')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the loading flag when the planner is not visible
       setIsExtraLoading(false)
       return
     }

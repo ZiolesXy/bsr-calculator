@@ -1,20 +1,20 @@
 import defaultSettings from '../data/default-settings.json'
 import type { CharacterState, ThreeColorCounts } from '../types'
 import {
-  calculateCharacterExp,
   calculateOwnedExp,
   calculateRecommendedMaterials,
   sumRangeCosts,
 } from '../utils/calculator'
 
 const bookValues = defaultSettings.books
+const characterExpCosts = defaultSettings.character.expCosts
 const characterEssenceCosts = defaultSettings.essences
 const characterKans = defaultSettings.character.kans
 const characterAscensionKans = defaultSettings.character.ascensionKans
 
 export function useCharacterCalculator(state: CharacterState) {
   const ownedExp = calculateOwnedExp(bookValues, state.ownedBooks)
-  const expRequired = calculateCharacterExp(state.current, state.target)
+  const expRequired = sumRangeCosts(characterExpCosts, state.current, state.target)
   const missingExp = Math.max(0, expRequired - ownedExp)
   const recommendation = calculateRecommendedMaterials(missingExp, bookValues, state.bookMode)
   const levelKans = sumRangeCosts(characterKans, state.current, state.target)

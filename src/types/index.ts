@@ -61,10 +61,12 @@ export type WeaponState = {
   tamahaganeMode: MaterialMode
 }
 
+export type SkillType = 'basic' | 'skill' | 'counter' | 'ultimate' | 'battlefield-skill' | 'entry-skill'
+
 export type SkillState = {
   current: number
   target: number
-  selectedTypes: Array<'basic' | 'skill' | 'counter' | 'ultimate' | 'battlefield-skill' | 'entry-skill'>
+  selectedTypes: SkillType[]
   ownedArts: ThreeColorCounts
   ownedOmamori: number
   passiveLevels: PassiveLevelsState

@@ -14,7 +14,7 @@ import { useCharacterCalculator } from '../../hooks/useCharacterCalculator'
 import { useSkillCalculator } from '../../hooks/useSkillCalculator'
 import { useWeaponCalculator } from '../../hooks/useWeaponCalculator'
 import type { CharacterState, ResourceColor, SkillState, WeaponState } from '../../types'
-import { levelMilestones, skillLevels } from '../../utils/calculator'
+import { levelMilestones, skillLevels, skillTypes } from '../../utils/calculator'
 import { formatNumber } from '../../utils/formatter'
 import { PillInput } from '../common/PillInput'
 import { StatCard } from '../common/StatCard'
@@ -62,7 +62,6 @@ type ManualSelection = {
 const STORAGE_KEY = 'bsr-daily-farming-schedule'
 const resourceColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
 const autoConvertCategories: FarmingCategory[] = ['art', 'essence', 'hammer']
-const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill', 'entry-skill'] as const
 
 const categoryLabels: Record<FarmingCategory, string> = {
   art: 'Art',

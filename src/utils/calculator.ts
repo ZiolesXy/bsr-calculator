@@ -1,8 +1,16 @@
-import expData from '../data/exp-data.json'
-import type { MaterialCounts, MaterialMode, PassiveResult, ResourceColor } from '../types'
+import levels from '../data/levels.json'
+import type { MaterialCounts, MaterialMode, PassiveResult, ResourceColor, SkillType } from '../types'
 
-export const levelMilestones = [1, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-export const skillLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+export const levelMilestones: number[] = levels.characterLevels
+export const skillLevels: number[] = levels.skillLevels
+export const skillTypes = [
+  'basic',
+  'skill',
+  'counter',
+  'ultimate',
+  'battlefield-skill',
+  'entry-skill',
+] as const satisfies readonly SkillType[]
 export const materialModes: Array<{ value: MaterialMode; label: string }> = [
   { value: 'green', label: 'Green only' },
   { value: 'blue', label: 'Blue only' },
@@ -27,25 +35,6 @@ export function sumRangeCosts<T extends Record<string, number | Record<string, n
     if (typeof value === 'number') {
       total += value
     }
-  }
-
-  return total
-}
-
-export function calculateCharacterExp(from: number, to: number) {
-  let total = 0
-  let current = from
-
-  while (current < to) {
-    const next = levelMilestones.find((level) => level > current) ?? to
-    const target = Math.min(next, to)
-    const row = expData[String(current) as keyof typeof expData] as Record<string, number> | undefined
-
-    if (row?.[String(target)]) {
-      total += row[String(target)]
-    }
-
-    current = target
   }
 
   return total

@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { useSkillState } from '../../context/AppStateContext'
 import { useSkillCalculator } from '../../hooks/useSkillCalculator'
 import { formatNumber } from '../../utils/formatter'
-import { skillLevels } from '../../utils/calculator'
+import { skillLevels, skillTypes } from '../../utils/calculator'
 import { PillInput } from '../common/PillInput'
 import { SelectField } from '../common/SelectField'
 import { StatCard } from '../common/StatCard'
@@ -10,8 +10,6 @@ import { StatCard } from '../common/StatCard'
 type SkillTabProps = {
   showOutput?: boolean
 }
-
-const skillTypes = ['basic', 'skill', 'counter', 'ultimate', 'battlefield-skill', 'entry-skill'] as const
 
 export function SkillTab({ showOutput = true }: SkillTabProps) {
   const { skillState: state, setSkillState } = useSkillState()

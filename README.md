@@ -99,10 +99,8 @@ src/
     useWeaponCalculator.ts
   data/
     default-settings.json
-    exp-data.json
     farming-rewards.json
     themes.json
-    weapon-costs.json
   types/
     index.ts
   utils/

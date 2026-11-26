@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- this context module intentionally exports its provider, hooks, and presets together */
 import { createContext, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import defaultAppState from '../data/default-app-state.json'
 import type { CharacterState, SkillState, WeaponState } from '../types'
