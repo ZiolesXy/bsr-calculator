@@ -1,7 +1,8 @@
 import { memo, useMemo } from 'react'
-import { useCharacterState, useSkillState, useWeaponState } from '../../context/AppStateContext'
+import { useCharacterState, useSkillState, useStampStates, useWeaponState } from '../../context/AppStateContext'
 import { useCharacterCalculator } from '../../hooks/useCharacterCalculator'
 import { useSkillCalculator } from '../../hooks/useSkillCalculator'
+import { useStampCalculator } from '../../hooks/useStampCalculator'
 import { useWeaponCalculator } from '../../hooks/useWeaponCalculator'
 import type { ExtraTabId, TabDefinition } from '../../types'
 import { TabNavigation } from '../common/TabNavigation'
@@ -21,14 +22,23 @@ export function ExtraTab(props: ExtraTabProps) {
   const { characterState } = useCharacterState()
   const { weaponState } = useWeaponState()
   const { skillState } = useSkillState()
+  const { stampCoreState, stampSetState } = useStampStates()
   const character = useCharacterCalculator(characterState)
   const weapon = useWeaponCalculator(weaponState)
   const skill = useSkillCalculator(skillState)
+  const stampCore = useStampCalculator('core', stampCoreState)
+  const stampSet = useStampCalculator('set', stampSetState)
   const totals = useMemo(
     () => ({
       totalKansCombined:
-        character.levelKans + character.ascensionKans + weapon.ascension + skill.totals.kans + skill.passiveTotalKans,
-      totalExpMissing: character.missingExp + weapon.missingExp,
+        character.levelKans +
+        character.ascensionKans +
+        weapon.ascension +
+        skill.totals.kans +
+        skill.passiveTotalKans +
+        stampCore.kans +
+        stampSet.kans,
+      totalExpMissing: character.missingExp + weapon.missingExp + stampCore.missingExp + stampSet.missingExp,
     }),
     [
       character.ascensionKans,
@@ -36,6 +46,10 @@ export function ExtraTab(props: ExtraTabProps) {
       character.missingExp,
       skill.passiveTotalKans,
       skill.totals.kans,
+      stampCore.kans,
+      stampCore.missingExp,
+      stampSet.kans,
+      stampSet.missingExp,
       weapon.ascension,
       weapon.missingExp,
     ],
@@ -50,8 +64,16 @@ export function ExtraTab(props: ExtraTabProps) {
       return <DailyScheduleContent />
     }
 
-    return <ExtraOverviewContent character={character} weapon={weapon} skill={skill} />
-  }, [character, props.activeExtraTab, skill, weapon])
+    return (
+      <ExtraOverviewContent
+        character={character}
+        weapon={weapon}
+        skill={skill}
+        stampCore={stampCore}
+        stampSet={stampSet}
+      />
+    )
+  }, [character, props.activeExtraTab, skill, stampCore, stampSet, weapon])
 
   return (
     <>
@@ -81,6 +103,8 @@ export function ExtraTab(props: ExtraTabProps) {
         character={character}
         weapon={weapon}
         skill={skill}
+        stampCore={stampCore}
+        stampSet={stampSet}
         totals={totals}
       />
     </>

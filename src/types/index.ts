@@ -1,4 +1,4 @@
-export type TabId = 'character' | 'weapon' | 'skill' | 'extra' | 'settings'
+export type TabId = 'character' | 'weapon' | 'skill' | 'stamp' | 'extra' | 'settings'
 export type SettingsTabId = 'theme'
 export type ExtraTabId = 'total-planner' | 'overview' | 'daily-schedule'
 
@@ -63,6 +63,20 @@ export type WeaponState = {
 
 export type SkillType = 'basic' | 'skill' | 'counter' | 'ultimate' | 'battlefield-skill' | 'entry-skill'
 
+export type StampKind = 'core' | 'set'
+
+export type StampState = {
+  current: number
+  target: number
+  cardMode: MaterialMode
+  ownedCards: MaterialCounts
+  ownedEctoplasm: number
+  nexusCurrent: number
+  nexusTarget: number
+  ownedNexus: number
+  setCount: number
+}
+
 export type SkillState = {
   current: number
   target: number
@@ -75,13 +89,13 @@ export type SkillState = {
 export type DailyScheduleInputState = {
   setupMode: 'manual' | 'character-pack'
   manualSelection: {
-    category: 'art' | 'book' | 'essence' | 'kans' | 'hammer' | 'omamori' | 'tamahagane'
+    category: 'art' | 'book' | 'card' | 'ectoplasm' | 'essence' | 'kans' | 'hammer' | 'omamori' | 'tamahagane'
     color: ResourceColor
     farmLevel: string
     target: number
   }
   characterFarmLevel: string
-  selectedCharacterId: string | null
+  selectedPackId: string | null
   packKansOwned: number
   dailyStamina: number
 }

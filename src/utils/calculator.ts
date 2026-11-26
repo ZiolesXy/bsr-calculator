@@ -23,11 +23,12 @@ export function sumRangeCosts<T extends Record<string, number | Record<string, n
   source: T,
   from: number,
   to: number,
+  milestones: number[] = levelMilestones,
 ) {
   let total = 0
 
-  for (const start of levelMilestones) {
-    const next = levelMilestones[levelMilestones.indexOf(start) + 1]
+  for (const start of milestones) {
+    const next = milestones[milestones.indexOf(start) + 1]
     if (!next || start < from || next > to) continue
 
     const key = `${start}-${next}` as keyof T

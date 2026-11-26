@@ -4,6 +4,8 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import {
   totalPlannerCharacterPreset,
   totalPlannerSkillPreset,
+  totalPlannerStampCorePreset,
+  totalPlannerStampSetPreset,
   totalPlannerWeaponPreset,
 } from '../../context/AppStateContext'
 import characterPack from '../../data/character-pack.json'
@@ -12,22 +14,32 @@ import defaultSettings from '../../data/default-settings.json'
 import farmingRewards from '../../data/farming-rewards.json'
 import { useCharacterCalculator } from '../../hooks/useCharacterCalculator'
 import { useSkillCalculator } from '../../hooks/useSkillCalculator'
+import { useStampCalculator } from '../../hooks/useStampCalculator'
 import { useWeaponCalculator } from '../../hooks/useWeaponCalculator'
-import type { CharacterState, ResourceColor, SkillState, WeaponState } from '../../types'
+import type { CharacterState, ResourceColor, SkillState, StampState, WeaponState } from '../../types'
 import { levelMilestones, skillLevels, skillTypes } from '../../utils/calculator'
 import { formatNumber } from '../../utils/formatter'
 import { PillInput } from '../common/PillInput'
 import { StatCard } from '../common/StatCard'
 import { SelectField } from '../common/SelectField'
+import { StampInputs } from '../stamp/StampInputs'
 
 type FarmingCategory = keyof typeof farmingRewards
 type FarmingLevel = keyof (typeof farmingRewards)[FarmingCategory]
 type FarmingRewardRow = { green: number; blue: number; purple: number; yellow: number; stamina: number }
+type EctoplasmRewardRow = { value: number; stamina: number }
 type KansRewardRow = { kans: number; stamina: number }
 type FarmingRewardTable = Record<string, FarmingRewardRow>
 type KansRewardTable = Record<string, KansRewardRow>
 type DailyView = 'entry' | 'setup' | 'schedule'
 type SetupMode = 'manual' | 'character-pack'
+type PackType = 'character' | 'core' | 'set'
+type PackDefinition = {
+  id: string
+  type: PackType
+  name: string
+  description: string
+}
 
 type ScheduleItem = {
   category: FarmingCategory
@@ -61,11 +73,14 @@ type ManualSelection = {
 
 const STORAGE_KEY = 'bsr-daily-farming-schedule'
 const resourceColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
-const autoConvertCategories: FarmingCategory[] = ['art', 'essence', 'hammer']
+const autoConvertCategories: FarmingCategory[] = ['art', 'essence', 'hammer', 'ectoplasm']
+const packDefinitions = characterPack.packs as PackDefinition[]
 
 const categoryLabels: Record<FarmingCategory, string> = {
   art: 'Art',
   book: 'Book',
+  card: 'Card',
+  ectoplasm: 'Ectoplasm',
   essence: 'Essence',
   kans: 'Kans',
   hammer: 'Hammer',
@@ -121,7 +136,15 @@ function createFarmItemId(category: FarmingCategory, farmLevel: string) {
 }
 
 function isAutoConvertCategory(category: FarmingCategory) {
-  return autoConvertCategories.includes(category)
+  return autoConvertCategories.includes(category) && category !== 'ectoplasm'
+}
+
+type EctoplasmRewardTable = Record<string, EctoplasmRewardRow>
+
+function getEctoplasmReward(farmLevel: string) {
+  const reward = farmingRewards.ectoplasm as EctoplasmRewardTable
+  const row = reward[farmLevel]
+  return row?.value ?? 0
 }
 
 function toGreenEquivalent(values: Partial<Record<ResourceColor, number>>) {
@@ -129,10 +152,11 @@ function toGreenEquivalent(values: Partial<Record<ResourceColor, number>>) {
 }
 
 function getGreenEquivalentReward(category: FarmingCategory, farmLevel: string) {
+  if (category === 'ectoplasm') return getEctoplasmReward(farmLevel)
   const reward = farmingRewards[category]
   if (typeof reward !== 'object' || reward === null) return 0
   const row = (reward as FarmingRewardTable)[farmLevel]
-  return row ? toGreenEquivalent(row) : 0
+  return row ? toGreenEquivalent(row as Partial<Record<ResourceColor, number>>) : 0
 }
 
 function createScheduleItem(category: FarmingCategory, farmLevel: string, color: ResourceColor, target: number, progress = 0): ScheduleItem {
@@ -165,32 +189,41 @@ function createScheduleItem(category: FarmingCategory, farmLevel: string, color:
       progress,
     }
   }
-  const normalizedColor = isAutoConvertCategory(category) ? 'green' : color
-  const rewardAmount = isAutoConvertCategory(category) ? getGreenEquivalentReward(category, farmLevel) : (row[normalizedColor] ?? 0)
-  const normalizedTarget = isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: target }) : target
-  const normalizedProgress = isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: progress }) : progress
+  const isEctoplasm = category === 'ectoplasm'
+  const normalizedColor = isEctoplasm ? 'green' : (isAutoConvertCategory(category) ? 'green' : color)
+  const rewardAmount = isEctoplasm
+    ? getEctoplasmReward(farmLevel)
+    : isAutoConvertCategory(category)
+      ? getGreenEquivalentReward(category, farmLevel)
+      : (row[normalizedColor] ?? 0)
+  const normalizedTarget = isEctoplasm ? target : (isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: target }) : target)
+  const normalizedProgress = isEctoplasm ? progress : (isAutoConvertCategory(category) ? toGreenEquivalent({ [color]: progress }) : progress)
   return {
     category,
     color: normalizedColor,
     farmLevel,
     id: createItemId(category, farmLevel, normalizedColor),
-    name: isAutoConvertCategory(category) ? `${categoryLabels[category]} value` : `${normalizedColor} ${categoryLabels[category]}`,
-    progressUnit: isAutoConvertCategory(category) ? 'value' : 'item',
-    source: `${categoryLabels[category]} stage ${farmLevel} (${row.stamina} stamina, avg ${rewardAmount}${isAutoConvertCategory(category) ? ' value' : ''})`,
+    name: isEctoplasm ? `${categoryLabels[category]} value` : `${categoryLabels[category]} value`,
+    progressUnit: isEctoplasm ? 'value' : 'item',
+    source: `${categoryLabels[category]} stage ${farmLevel} (${row.stamina} stamina, avg ${rewardAmount}${isAutoConvertCategory(category) || isEctoplasm ? ' value' : ''})`,
     target: normalizedTarget,
     progress: normalizedProgress,
   }
 }
 
-function calculateRewardExp(category: 'book' | 'tamahagane', farmLevel: string) {
+function calculateRewardExp(category: 'book' | 'tamahagane' | 'card', farmLevel: string) {
   const reward = (farmingRewards[category] as FarmingRewardTable)[farmLevel]
-  const values = category === 'book' ? defaultSettings.books : defaultSettings.weapon.tamahaganeExp
+  const values = category === 'book'
+    ? defaultSettings.books
+    : category === 'card'
+      ? defaultSettings.stamp.cardValues
+      : defaultSettings.weapon.tamahaganeExp
 
   return resourceColors.reduce((total, color) => total + (reward?.[color] ?? 0) * values[color], 0)
 }
 
 function getRewardSummary(category: FarmingCategory, farmLevel: string, color: ResourceColor) {
-  if (category === 'book' || category === 'tamahagane') {
+  if (category === 'book' || category === 'tamahagane' || category === 'card') {
     return {
       amount: calculateRewardExp(category, farmLevel),
       unit: 'EXP/farm',
@@ -211,7 +244,7 @@ function getRewardSummary(category: FarmingCategory, farmLevel: string, color: R
   }
 }
 
-function createExpFarmScheduleItem(category: 'book' | 'tamahagane', farmLevel: string, missingExp: number): ScheduleItem | null {
+function createExpFarmScheduleItem(category: 'book' | 'tamahagane' | 'card', farmLevel: string, missingExp: number): ScheduleItem | null {
   const reward = (farmingRewards[category] as unknown as FarmingRewardTable)[farmLevel]
   const expPerFarm = calculateRewardExp(category, farmLevel)
   if (missingExp <= 0 || expPerFarm <= 0) return null
@@ -260,6 +293,12 @@ function getFarmRewardAmount(item: ScheduleItem) {
   if (item.progressUnit === 'farm') return 1
   if (item.category === 'kans') return (farmingRewards.kans as unknown as KansRewardTable)[item.farmLevel]?.kans ?? 0
   if (isAutoConvertCategory(item.category)) return getGreenEquivalentReward(item.category, item.farmLevel)
+
+  // Handle ectoplasm which uses 'value' field instead of color-specific rewards
+  if (item.category === 'ectoplasm') {
+    const reward: EctoplasmRewardRow | undefined = (farmingRewards.ectoplasm as unknown as EctoplasmRewardTable)[item.farmLevel]
+    return reward?.value ?? 0
+  }
 
   const reward = (farmingRewards[item.category] as unknown as FarmingRewardTable | undefined)?.[item.farmLevel]
   return reward?.[item.color] ?? 0
@@ -324,7 +363,7 @@ function sanitizeImportedSchedule(schedule: unknown): ScheduleItem[] {
     const farmLevel = String(item.farmLevel || parsedId?.farmLevel || '6')
 
     if (farmingRewards[category]?.[farmLevel as FarmingLevel]) {
-      if ((item.progressUnit === 'farm' || String(item.id).endsWith('_farm')) && (category === 'book' || category === 'tamahagane')) {
+      if ((item.progressUnit === 'farm' || String(item.id).endsWith('_farm')) && (category === 'book' || category === 'tamahagane' || category === 'card')) {
         const expFarmItem = createExpFarmScheduleItem(
           category,
           farmLevel,
@@ -382,7 +421,7 @@ function readStoredDailyStamina(raw: unknown) {
   return normalizeStamina(raw as number, defaultAppState.extraInput.dailyStamina)
 }
 
-function createGreenValueScheduleItem(category: 'art' | 'essence' | 'hammer', farmLevel: string, target: number) {
+function createGreenValueScheduleItem(category: 'art' | 'essence' | 'hammer' | 'ectoplasm', farmLevel: string, target: number) {
   return target > 0 ? createScheduleItem(category, farmLevel, 'green', target) : null
 }
 
@@ -510,16 +549,22 @@ type CharacterPackSetupProps = {
   farmLevel: string
   farmLevels: string[]
   kansOwned: number
-  totalKansNeeded: number
-  selectedCharacterId: string | null
+  packType: PackType
+  selectedPackId: string | null
   skillState: SkillState
+  stampCoreState: StampState
+  stampSetState: StampState
+  stampNexusMissing: number
+  totalKansNeeded: number
   weaponState: WeaponState
   onCharacterChange: React.Dispatch<React.SetStateAction<CharacterState>>
   onFarmLevelChange: (farmLevel: string) => void
   onGenerate: () => void
   onKansOwnedChange: React.Dispatch<React.SetStateAction<number>>
-  onSelectCharacter: (characterId: string) => void
+  onSelectPack: (packId: string) => void
   onSkillChange: React.Dispatch<React.SetStateAction<SkillState>>
+  onStampCoreChange: React.Dispatch<React.SetStateAction<StampState>>
+  onStampSetChange: React.Dispatch<React.SetStateAction<StampState>>
   onWeaponChange: React.Dispatch<React.SetStateAction<WeaponState>>
 }
 
@@ -528,34 +573,45 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
   farmLevel,
   farmLevels,
   kansOwned,
-  totalKansNeeded,
-  selectedCharacterId,
+  packType,
+  selectedPackId,
   skillState,
+  stampCoreState,
+  stampSetState,
+  stampNexusMissing,
+  totalKansNeeded,
   weaponState,
   onCharacterChange,
   onFarmLevelChange,
   onGenerate,
   onKansOwnedChange,
-  onSelectCharacter,
+  onSelectPack,
   onSkillChange,
+  onStampCoreChange,
+  onStampSetChange,
   onWeaponChange,
 }: CharacterPackSetupProps) {
   return (
     <section className="overview-block">
       <div className="overview-block__header">
-        <strong>Character Pack</strong>
-        <span>Pilih character, isi kebutuhan seperti Total Planner, lalu generate schedule.</span>
+        <strong>Pack Setup</strong>
+        <span>Pilih Character, Core Stamp, atau Set Stamp, lalu generate schedule.</span>
       </div>
       <div className="farming-choice-grid">
-        {characterPack.characters.map((character) => (
-          <button key={character.id} type="button" className="schedule-pack-card" onClick={() => onSelectCharacter(character.id)}>
-            <small>{character.description}</small>
-            <strong>{character.name}</strong>
+        {packDefinitions.map((pack) => (
+          <button
+            key={pack.id}
+            type="button"
+            className={`schedule-pack-card ${selectedPackId === pack.id ? 'is-active' : ''}`}
+            onClick={() => onSelectPack(pack.id)}
+          >
+            <small>{pack.description}</small>
+            <strong>{pack.name}</strong>
             <span>Select preset</span>
           </button>
         ))}
       </div>
-      {selectedCharacterId && (
+      {selectedPackId && (
         <>
           <div className="control-grid">
             <label className="field">
@@ -576,21 +632,38 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
             <section className="overview-block">
               <div className="overview-block__header">
                 <strong>Kans Calculator</strong>
-                <span>Hitung kebutuhan kans dari Character Pack lalu kurangi owned kans.</span>
+                <span>Hitung kebutuhan kans dari pack lalu kurangi owned kans.</span>
               </div>
               <div className="overview-inline-stats">
                 <StatCard label="Total Kans Needed" value={formatNumber(totalKansNeeded)} />
                 <StatCard label="Owned Kans" value={formatNumber(kansOwned)} />
                 <StatCard label="Missing Kans" value={formatNumber(Math.max(0, totalKansNeeded - kansOwned))} />
+                {packType === 'set' && <StatCard label="Nexus Missing (unfarmable)" value={formatNumber(stampNexusMissing)} />}
               </div>
               <div className="token-grid">
                 <PillInput label="Kans owned" color="yellow" value={kansOwned} onChange={onKansOwnedChange} />
               </div>
               <p className="farming-hint">Formula: total kebutuhan kans dari input pack - kans owned = kans yang masuk schedule.</p>
             </section>
-            <CharacterPlannerInputs state={characterState} onChange={onCharacterChange} />
-            <WeaponPlannerInputs state={weaponState} onChange={onWeaponChange} />
-            <SkillPlannerInputs state={skillState} onChange={onSkillChange} />
+            {packType === 'character' ? (
+              <>
+                <CharacterPlannerInputs state={characterState} onChange={onCharacterChange} />
+                <WeaponPlannerInputs state={weaponState} onChange={onWeaponChange} />
+                <SkillPlannerInputs state={skillState} onChange={onSkillChange} />
+              </>
+            ) : (
+              <section className="overview-block">
+                <div className="overview-block__header">
+                  <strong>{packType === 'core' ? 'Core Stamp input' : 'Set Stamp input'}</strong>
+                  <span>Input sama seperti Stamp di Total Planner.</span>
+                </div>
+                <StampInputs
+                  kind={packType}
+                  state={packType === 'core' ? stampCoreState : stampSetState}
+                  onChange={packType === 'core' ? onStampCoreChange : onStampSetChange}
+                />
+              </section>
+            )}
           </div>
         </>
       )}
@@ -713,9 +786,13 @@ type SetupViewProps = {
   characterFarmLevel: string
   dailyStamina: number
   kansOwned: number
+  packType: PackType
+  selectedPackId: string | null
+  stampCoreState: StampState
+  stampNexusMissing: number
+  stampSetState: StampState
   totalKansNeeded: number
   manualSelection: ManualSelection
-  selectedCharacterId: string | null
   selectedColor: ResourceColor
   selectedRewardAmount: number
   selectedRewardUnit: string
@@ -732,9 +809,11 @@ type SetupViewProps = {
   onGenerateManual: () => void
   onKansOwnedChange: React.Dispatch<React.SetStateAction<number>>
   onManualSelectionChange: (selection: Partial<ManualSelection>) => void
-  onSelectCharacter: (characterId: string) => void
+  onSelectPack: (packId: string) => void
   onSetupModeChange: (mode: SetupMode) => void
   onSkillChange: React.Dispatch<React.SetStateAction<SkillState>>
+  onStampCoreChange: React.Dispatch<React.SetStateAction<StampState>>
+  onStampSetChange: React.Dispatch<React.SetStateAction<StampState>>
   onWeaponChange: React.Dispatch<React.SetStateAction<WeaponState>>
 }
 
@@ -744,14 +823,14 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
       <section className="overview-block">
         <div className="overview-block__header">
           <strong>Pilih Kebutuhan</strong>
-          <span>Setup manual atau generate otomatis dari Character Pack.</span>
+          <span>Setup manual atau generate otomatis dari pack.</span>
         </div>
         <div className="farming-toolbar">
           <button type="button" className={`mini-tab ${props.setupMode === 'manual' ? 'is-active' : ''}`} onClick={() => props.onSetupModeChange('manual')}>
             Manual Setup
           </button>
           <button type="button" className={`mini-tab ${props.setupMode === 'character-pack' ? 'is-active' : ''}`} onClick={() => props.onSetupModeChange('character-pack')}>
-            Character Pack
+            Pack Setup
           </button>
           <button type="button" className="mini-tab" onClick={props.onBack}>
             Back
@@ -790,16 +869,22 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
           farmLevel={props.characterFarmLevel}
           farmLevels={props.availableLevels}
           kansOwned={props.kansOwned}
-          totalKansNeeded={props.totalKansNeeded}
-          selectedCharacterId={props.selectedCharacterId}
+          packType={props.packType}
+          selectedPackId={props.selectedPackId}
           skillState={props.skillState}
+          stampCoreState={props.stampCoreState}
+          stampSetState={props.stampSetState}
+          stampNexusMissing={props.stampNexusMissing}
+          totalKansNeeded={props.totalKansNeeded}
           weaponState={props.weaponState}
           onCharacterChange={props.onCharacterChange}
           onFarmLevelChange={props.onCharacterFarmLevelChange}
           onGenerate={props.onGenerateCharacterPack}
           onKansOwnedChange={props.onKansOwnedChange}
-          onSelectCharacter={props.onSelectCharacter}
+          onSelectPack={props.onSelectPack}
           onSkillChange={props.onSkillChange}
+          onStampCoreChange={props.onStampCoreChange}
+          onStampSetChange={props.onStampSetChange}
           onWeaponChange={props.onWeaponChange}
         />
       )}
@@ -825,6 +910,7 @@ type ScheduleViewProps = {
   onSetup: () => void
   onTargetEdit: (id: string) => void
   onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
+  onUpdateCard: (id: string) => void
   onShareExport: () => void
 }
 
@@ -846,6 +932,7 @@ const ScheduleView = memo(function ScheduleView({
   onSetup,
   onTargetEdit,
   onUpdateProgress,
+  onUpdateCard,
   onShareExport,
 }: ScheduleViewProps) {
   const exportDate = new Date().toISOString().split('T')[0]
@@ -893,6 +980,7 @@ const ScheduleView = memo(function ScheduleView({
               onRemove={onRemove}
               onTargetEdit={onTargetEdit}
               onUpdateProgress={onUpdateProgress}
+              onUpdateCard={onUpdateCard}
             />
           ))}
         </div>
@@ -907,9 +995,10 @@ type ScheduleCardProps = {
   onRemove: (id: string) => void
   onTargetEdit: (id: string) => void
   onUpdateProgress: (id: string, amount: number, includeStageRewards?: boolean) => void
+  onUpdateCard?: (id: string) => void
 }
 
-const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, onTargetEdit, onUpdateProgress }: ScheduleCardProps) {
+const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, onTargetEdit, onUpdateProgress, onUpdateCard }: ScheduleCardProps) {
   const progressPercent = item.target === 0 ? 100 : Math.min(100, Math.round((item.progress / item.target) * 100))
   const canAddProgress = canUseFarmAddButton(item)
   const progressUnitLabel = item.progressUnit === 'farm' ? ' farm' : ''
@@ -926,6 +1015,11 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
       ? formatEstimatedDuration(estimatedDays)
       : 'Isi daily stamina'
 
+  // Calculate total EXP required for card farms
+  const totalExpRequired = item.category === 'card' && item.progressUnit === 'farm'
+    ? Math.ceil(item.target) * calculateRewardExp('card', item.farmLevel)
+    : 0
+
   return (
     <article className="farming-card">
       <div className="farming-card__header">
@@ -940,6 +1034,7 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
       </div>
       <div className="farming-card__details">
         <span>{formatNumber(item.progress)} / {formatNumber(item.target)}{progressUnitLabel}</span>
+        {totalExpRequired > 0 && <span>Total EXP dibutuhkan: {formatNumber(totalExpRequired)}</span>}
         <span>Sisa klik {formatNumber(remainingClicks)} | Estimasi {estimateLabel}</span>
       </div>
       <div className="farming-card__actions">
@@ -949,6 +1044,9 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
               <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, 1)}>+1</button>
               {item.progressUnit !== 'farm' && (
                 <button type="button" className="mini-tab" onClick={() => onUpdateProgress(item.id, customRewardAmount, true)}>+Custom ({formatNumber(customRewardAmount)})</button>
+              )}
+              {item.category === 'card' && (
+                <button type="button" className="mini-tab" onClick={() => onUpdateCard && onUpdateCard(item.id)}>Update Card</button>
               )}
             </>
           )}
@@ -967,10 +1065,12 @@ export function DailyScheduleContent() {
   const [characterFarmLevel, setCharacterFarmLevel] = useState(defaultAppState.extraInput.characterFarmLevel)
   const [dailyStamina, setDailyStamina] = useState(defaultAppState.extraInput.dailyStamina)
   const [schedule, setSchedule] = useState<ScheduleItem[]>([])
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(defaultAppState.extraInput.selectedCharacterId)
+  const [selectedPackId, setSelectedPackId] = useState<string | null>(defaultAppState.extraInput.selectedPackId)
   const [packCharacterState, setPackCharacterState] = useState(totalPlannerCharacterPreset)
   const [packWeaponState, setPackWeaponState] = useState(totalPlannerWeaponPreset)
   const [packSkillState, setPackSkillState] = useState(totalPlannerSkillPreset)
+  const [packCoreStampState, setPackCoreStampState] = useState(totalPlannerStampCorePreset)
+  const [packSetStampState, setPackSetStampState] = useState(totalPlannerStampSetPreset)
   const [packKansOwned, setPackKansOwned] = useState(defaultAppState.extraInput.packKansOwned)
   const [message, setMessage] = useState('')
   const [exportResult, setExportResult] = useState<ExportResult>(null)
@@ -979,10 +1079,26 @@ export function DailyScheduleContent() {
   const packCharacterResult = useCharacterCalculator(packCharacterState)
   const packWeaponResult = useWeaponCalculator(packWeaponState)
   const packSkillResult = useSkillCalculator(packSkillState)
-  const totalKansNeeded = useMemo(
-    () => packCharacterResult.levelKans + packCharacterResult.ascensionKans + packWeaponResult.ascension + packSkillResult.totals.kans + packSkillResult.passiveTotalKans,
-    [packCharacterResult.ascensionKans, packCharacterResult.levelKans, packSkillResult.passiveTotalKans, packSkillResult.totals.kans, packWeaponResult.ascension],
-  )
+  const packCoreStampResult = useStampCalculator('core', packCoreStampState)
+  const packSetStampResult = useStampCalculator('set', packSetStampState)
+  const selectedPack = useMemo(() => packDefinitions.find((pack) => pack.id === selectedPackId), [selectedPackId])
+  const packType: PackType = selectedPack?.type ?? 'character'
+  const stampNexusMissing = packType === 'set' ? packSetStampResult.nexusMissing : 0
+  const totalKansNeeded = useMemo(() => {
+    if (packType === 'core') return packCoreStampResult.kans
+    if (packType === 'set') return packSetStampResult.kans
+
+    return packCharacterResult.levelKans + packCharacterResult.ascensionKans + packWeaponResult.ascension + packSkillResult.totals.kans + packSkillResult.passiveTotalKans
+  }, [
+    packCharacterResult.ascensionKans,
+    packCharacterResult.levelKans,
+    packCoreStampResult.kans,
+    packSetStampResult.kans,
+    packSkillResult.passiveTotalKans,
+    packSkillResult.totals.kans,
+    packType,
+    packWeaponResult.ascension,
+  ])
 
   const availableLevels = useMemo(() => Object.keys(farmingRewards[manualSelection.category]), [manualSelection.category])
   const selectedFarmLevel = availableLevels.includes(manualSelection.farmLevel) ? manualSelection.farmLevel : availableLevels[0] ?? '1'
@@ -1002,7 +1118,7 @@ export function DailyScheduleContent() {
       : isManualAutoConvertCategory
         ? ['green', 'blue', 'purple']
         : resourceColors.filter((resourceColor) => (selectedReward?.[resourceColor] ?? 0) > 0),
-    [isManualAutoConvertCategory, selectedReward],
+    [isManualAutoConvertCategory, manualSelection.category, selectedReward],
   )
   const selectedColor: ResourceColor = availableColors.includes(manualSelection.color) ? manualSelection.color : availableColors[0] ?? 'green'
   const selectedRewardSummary = manualSelection.category === 'kans'
@@ -1152,6 +1268,10 @@ export function DailyScheduleContent() {
     }
   }, [])
 
+  const onUpdateCard = useCallback((id: string) => {
+    window.alert(`Card ${id} updated!`)
+  }, [])
+
   const editTarget = useCallback((id: string) => {
     const nextTarget = window.prompt('Target baru?')
     if (nextTarget === null) return
@@ -1169,14 +1289,32 @@ export function DailyScheduleContent() {
     setMessage('Schedule reset. Press Save to persist this reset.')
   }, [])
 
-  const selectCharacterPack = useCallback((characterId: string) => {
-    const character = characterPack.characters.find((entry) => entry.id === characterId)
-    if (character) setSelectedCharacterId(characterId)
+  const selectPack = useCallback((packId: string) => {
+    if (packDefinitions.some((entry) => entry.id === packId)) setSelectedPackId(packId)
   }, [])
 
-  const generateCharacterPack = useCallback(() => {
-    const character = characterPack.characters.find((entry) => entry.id === selectedCharacterId)
-    if (!character) return
+  const generatePack = useCallback(() => {
+    if (!selectedPack) return
+
+    if (selectedPack.type === 'core' || selectedPack.type === 'set') {
+      const stampResult = selectedPack.type === 'core' ? packCoreStampResult : packSetStampResult
+      const stampState = selectedPack.type === 'core' ? packCoreStampState : packSetStampState
+      const missingKans = Math.max(0, stampResult.kans - packKansOwned)
+      const missingEctoplasmGreen = Math.max(0, stampResult.ectoplasmTotal - stampState.ownedEctoplasm)
+
+      const generatedItems = [
+        createGreenValueScheduleItem('ectoplasm', characterFarmLevel, missingEctoplasmGreen),
+        createKansScheduleItem(characterFarmLevel, missingKans),
+      ].filter((item): item is ScheduleItem => item !== null)
+
+      setSchedule((current) => mergeSchedule(current, generatedItems))
+      setView('schedule')
+      const nexusNote = selectedPack.type === 'set' && stampResult.nexusMissing > 0
+        ? ` Nexus Stamp sisa ${stampResult.nexusMissing} (unfarmable).`
+        : ''
+      setMessage(`${selectedPack.name} pack generated.${nexusNote}`)
+      return
+    }
 
     const expFarmItems = [
       createExpFarmScheduleItem('book', characterFarmLevel, packCharacterResult.missingExp),
@@ -1202,25 +1340,25 @@ export function DailyScheduleContent() {
 
     setSchedule((current) => mergeSchedule(current, generatedItems))
     setView('schedule')
-    setMessage(`${character.name} pack generated.`)
+    setMessage(`${selectedPack.name} pack generated.`)
   }, [
+    characterFarmLevel,
     packCharacterResult.essenceTotal,
     packCharacterResult.missingExp,
-    packCharacterResult.levelKans,
-    packCharacterResult.ascensionKans,
-    packSkillResult.passiveMissingOmamori,
-    packSkillResult.passiveTotalKans,
-    packSkillResult.totals,
     packCharacterState.ownedEssences,
+    packCoreStampResult,
+    packCoreStampState,
     packKansOwned,
-    totalKansNeeded,
+    packSetStampResult,
+    packSetStampState,
+    packSkillResult.passiveMissingOmamori,
+    packSkillResult.totals,
     packSkillState.ownedArts,
     packWeaponResult.hammerTotal,
-    packWeaponResult.ascension,
     packWeaponResult.missingExp,
     packWeaponState.ownedHammers,
-    selectedCharacterId,
-    characterFarmLevel,
+    selectedPack,
+    totalKansNeeded,
   ])
 
   switch (view) {
@@ -1243,9 +1381,13 @@ export function DailyScheduleContent() {
           dailyStamina={dailyStamina}
           isManualAutoConvertCategory={isManualAutoConvertCategory}
           kansOwned={packKansOwned}
+          packType={packType}
+          selectedPackId={selectedPackId}
+          stampCoreState={packCoreStampState}
+          stampNexusMissing={stampNexusMissing}
+          stampSetState={packSetStampState}
           totalKansNeeded={totalKansNeeded}
           manualSelection={{ ...manualSelection, color: selectedColor, farmLevel: selectedFarmLevel }}
-          selectedCharacterId={selectedCharacterId}
           selectedColor={selectedColor}
           selectedRewardAmount={selectedRewardSummary.amount}
           selectedRewardUnit={selectedRewardSummary.unit}
@@ -1259,12 +1401,14 @@ export function DailyScheduleContent() {
           onCharacterFarmLevelChange={setCharacterFarmLevel}
           onDailyStaminaChange={setDailyStamina}
           onKansOwnedChange={setPackKansOwned}
-          onGenerateCharacterPack={generateCharacterPack}
+          onGenerateCharacterPack={generatePack}
           onGenerateManual={generateManualSchedule}
           onManualSelectionChange={(selection) => setManualSelection((current) => ({ ...current, ...selection }))}
-          onSelectCharacter={selectCharacterPack}
+          onSelectPack={selectPack}
           onSetupModeChange={setSetupMode}
           onSkillChange={setPackSkillState}
+          onStampCoreChange={setPackCoreStampState}
+          onStampSetChange={setPackSetStampState}
           onWeaponChange={setPackWeaponState}
         />
       )
@@ -1288,6 +1432,7 @@ export function DailyScheduleContent() {
           onSetup={goToSetup}
           onTargetEdit={editTarget}
           onUpdateProgress={updateProgress}
+          onUpdateCard={onUpdateCard}
           onShareExport={shareExport}
         />
       )

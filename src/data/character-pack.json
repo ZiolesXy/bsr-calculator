@@ -1,9 +1,22 @@
 {
-  "characters": [
+  "packs": [
     {
       "id": "character",
+      "type": "character",
       "name": "Character",
-      "description": "Generate farming schedule from Total Planner style inputs."
+      "description": "Character, weapon, and skill."
+    },
+    {
+      "id": "core-stamp",
+      "type": "core",
+      "name": "Core Stamp",
+      "description": "Cards, ectoplasm, and kans."
+    },
+    {
+      "id": "set-stamp",
+      "type": "set",
+      "name": "Set Stamp",
+      "description": "Core costs plus nexus."
     }
   ]
 }

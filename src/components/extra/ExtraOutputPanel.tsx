@@ -3,6 +3,14 @@ import { formatNumber } from '../../utils/formatter'
 import { RecommendationCard } from '../common/RecommendationCard'
 import { StatCard } from '../common/StatCard'
 
+type StampSummary = {
+  missingExp: number
+  kans: number
+  recommendation: MaterialRecommendation
+  nexusMissing: number
+  ectoplasmNeeded: number
+}
+
 type ExtraOutputPanelProps = {
   activeExtraTab: ExtraTabId
   character: {
@@ -21,13 +29,15 @@ type ExtraOutputPanelProps = {
     passiveMissingOmamori: number
     skillMultiplier: number
   }
+  stampCore: StampSummary
+  stampSet: StampSummary
   totals: {
     totalKansCombined: number
     totalExpMissing: number
   }
 }
 
-export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, totals }: ExtraOutputPanelProps) {
+export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, stampCore, stampSet, totals }: ExtraOutputPanelProps) {
   return (
     <section className="panel stats-panel">
       <p className="section-tag">Extra Output</p>
@@ -44,6 +54,12 @@ export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, tot
           <StatCard label="Weapon Gold" value={formatNumber(weapon.gold)} />
           <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
           <StatCard label="Skill Types Selected" value={formatNumber(skill.skillMultiplier)} />
+          <StatCard label="Core Stamp Missing EXP" value={formatNumber(stampCore.missingExp)} />
+          <RecommendationCard label="Core cards to prepare" recommendation={stampCore.recommendation} />
+          <StatCard label="Set Stamp Missing EXP" value={formatNumber(stampSet.missingExp)} />
+          <RecommendationCard label="Set cards to prepare" recommendation={stampSet.recommendation} />
+          <StatCard label="Stamp Kans" value={formatNumber(stampCore.kans + stampSet.kans)} />
+          <StatCard label="Nexus Missing" value={formatNumber(stampSet.nexusMissing)} />
         </>
       )}
       {activeExtraTab === 'overview' && (
@@ -54,6 +70,9 @@ export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, tot
           <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
           <StatCard label="Books Extra EXP" value={formatNumber(character.recommendation.overshoot)} />
           <StatCard label="Tamahagane Extra EXP" value={formatNumber(weapon.recommendation.overshoot)} />
+          <StatCard label="Core Stamp Missing EXP" value={formatNumber(stampCore.missingExp)} />
+          <StatCard label="Set Stamp Missing EXP" value={formatNumber(stampSet.missingExp)} />
+          <StatCard label="Nexus Missing" value={formatNumber(stampSet.nexusMissing)} />
         </>
       )}
       {activeExtraTab === 'daily-schedule' && (

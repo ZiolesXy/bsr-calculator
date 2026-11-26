@@ -3,6 +3,14 @@ import { formatNumber } from '../../utils/formatter'
 import { RecommendationCard } from '../common/RecommendationCard'
 import { StatCard } from '../common/StatCard'
 
+type StampSummary = {
+  missingExp: number
+  kans: number
+  recommendation: MaterialRecommendation
+  ectoplasmNeeded: number
+  nexusMissing: number
+}
+
 type ExtraOverviewContentProps = {
   character: {
     missingExp: number
@@ -25,9 +33,11 @@ type ExtraOverviewContentProps = {
     passiveMissingOmamori: number
     skillMultiplier: number
   }
+  stampCore: StampSummary
+  stampSet: StampSummary
 }
 
-export function ExtraOverviewContent({ character, weapon, skill }: ExtraOverviewContentProps) {
+export function ExtraOverviewContent({ character, weapon, skill, stampCore, stampSet }: ExtraOverviewContentProps) {
   return (
     <div className="overview-stack">
       <article className="overview-block">
@@ -76,6 +86,39 @@ export function ExtraOverviewContent({ character, weapon, skill }: ExtraOverview
         </div>
         <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
         <StatCard label="Skill Types Selected" value={formatNumber(skill.skillMultiplier)} />
+      </article>
+
+      <article className="overview-block">
+        <div className="overview-block__header">
+          <p className="section-tag">Core Stamp</p>
+          <strong>Core stamp summary</strong>
+        </div>
+        <div className="overview-inline-stats">
+          <StatCard label="Missing EXP" value={formatNumber(stampCore.missingExp)} />
+          <StatCard label="Kans" value={formatNumber(stampCore.kans)} />
+        </div>
+        <RecommendationCard label="Cards to prepare" recommendation={stampCore.recommendation} />
+        <StatCard
+          label="Need Ectoplasm"
+          value={formatNumber(stampCore.ectoplasmNeeded)}
+        />
+      </article>
+
+      <article className="overview-block">
+        <div className="overview-block__header">
+          <p className="section-tag">Set Stamp</p>
+          <strong>Set stamp summary</strong>
+        </div>
+        <div className="overview-inline-stats">
+          <StatCard label="Missing EXP" value={formatNumber(stampSet.missingExp)} />
+          <StatCard label="Kans" value={formatNumber(stampSet.kans)} />
+          <StatCard label="Nexus Missing" value={formatNumber(stampSet.nexusMissing)} />
+        </div>
+        <RecommendationCard label="Cards to prepare" recommendation={stampSet.recommendation} />
+        <StatCard
+          label="Need Ectoplasm"
+          value={formatNumber(stampSet.ectoplasmNeeded)}
+        />
       </article>
     </div>
   )

@@ -27,6 +27,24 @@
     "6": { "green": 4, "blue": 3, "purple": 1, "yellow": 0, "stamina": 20 },
     "Bonus": { "green": 8, "blue": 3, "purple": 1, "yellow": 0, "stamina": 20 }
   },
+  "card": {
+    "1": { "green": 12, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
+    "2": { "green": 8, "blue": 2, "purple": 0, "yellow": 0, "stamina": 20 },
+    "3": { "green": 4, "blue": 4, "purple": 0, "yellow": 0, "stamina": 20 },
+    "4": { "green": 0, "blue": 6, "purple": 1, "yellow": 0, "stamina": 20 },
+    "5": { "green": 0, "blue": 4, "purple": 2, "yellow": 0, "stamina": 20 },
+    "6": { "green": 0, "blue": 2, "purple": 3, "yellow": 1, "stamina": 20 },
+    "Bonus": { "green": 12, "blue": 4, "purple": 2, "yellow": 1, "stamina": 20 }
+  },
+  "ectoplasm": {
+    "1": { "value": 25, "stamina": 20 },
+    "2": { "value": 30, "stamina": 20 },
+    "3": { "value": 35, "stamina": 20 },
+    "4": { "value": 40, "stamina": 20 },
+    "5": { "value": 45, "stamina": 20 },
+    "6": { "value": 50, "stamina": 20 },
+    "Bonus": { "value": 50, "stamina": 20 }
+  },
   "hammer": {
     "1": { "green": 8, "blue": 0, "purple": 0, "yellow": 0, "stamina": 20 },
     "2": { "green": 4, "blue": 2, "purple": 0, "yellow": 0, "stamina": 20 },

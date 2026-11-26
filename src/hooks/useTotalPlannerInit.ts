@@ -1,6 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { useAppState, totalPlannerCharacterPreset, totalPlannerSkillPreset, totalPlannerWeaponPreset } from '../context/AppStateContext'
-import type { ExtraTabId, TabId } from '../types'
+import {
+  useAppState,
+  useStampStates,
+  totalPlannerCharacterPreset,
+  totalPlannerSkillPreset,
+  totalPlannerStampCorePreset,
+  totalPlannerStampSetPreset,
+  totalPlannerWeaponPreset,
+} from '../context/AppStateContext'
+import type { ExtraTabId, StampState, TabId } from '../types'
 
 function isCharacterPresetApplied(
   current: ReturnType<typeof useAppState>['characterState'],
@@ -57,8 +65,26 @@ function isSkillPresetApplied(
   )
 }
 
+function isStampPresetApplied(current: StampState, preset: StampState) {
+  return (
+    current.current === preset.current &&
+    current.target === preset.target &&
+    current.cardMode === preset.cardMode &&
+    current.ownedCards.green === preset.ownedCards.green &&
+    current.ownedCards.blue === preset.ownedCards.blue &&
+    current.ownedCards.purple === preset.ownedCards.purple &&
+    current.ownedCards.yellow === preset.ownedCards.yellow &&
+    current.ownedEctoplasm === preset.ownedEctoplasm &&
+    current.nexusCurrent === preset.nexusCurrent &&
+    current.nexusTarget === preset.nexusTarget &&
+    current.ownedNexus === preset.ownedNexus &&
+    (current.setCount ?? 1) === (preset.setCount ?? 1)
+  )
+}
+
 export function useTotalPlannerInit(activeTab: TabId, activeExtraTab: ExtraTabId) {
   const { characterState, setCharacterState, weaponState, setWeaponState, skillState, setSkillState } = useAppState()
+  const { stampCoreState, setStampCoreState, stampSetState, setStampSetState } = useStampStates()
   const hasInitializedTotalPlanner = useRef(false)
 
   useEffect(() => {
@@ -69,6 +95,8 @@ export function useTotalPlannerInit(activeTab: TabId, activeExtraTab: ExtraTabId
     const hasCharacterPreset = isCharacterPresetApplied(characterState)
     const hasWeaponPreset = isWeaponPresetApplied(weaponState)
     const hasSkillPreset = isSkillPresetApplied(skillState)
+    const hasCoreStampPreset = isStampPresetApplied(stampCoreState, totalPlannerStampCorePreset)
+    const hasSetStampPreset = isStampPresetApplied(stampSetState, totalPlannerStampSetPreset)
 
     if (!hasCharacterPreset) {
       setCharacterState(totalPlannerCharacterPreset)
@@ -79,6 +107,12 @@ export function useTotalPlannerInit(activeTab: TabId, activeExtraTab: ExtraTabId
     if (!hasSkillPreset) {
       setSkillState(totalPlannerSkillPreset)
     }
+    if (!hasCoreStampPreset) {
+      setStampCoreState(totalPlannerStampCorePreset)
+    }
+    if (!hasSetStampPreset) {
+      setStampSetState(totalPlannerStampSetPreset)
+    }
 
     hasInitializedTotalPlanner.current = true
   }, [
@@ -87,8 +121,12 @@ export function useTotalPlannerInit(activeTab: TabId, activeExtraTab: ExtraTabId
     characterState,
     setCharacterState,
     setSkillState,
+    setStampCoreState,
+    setStampSetState,
     setWeaponState,
     skillState,
+    stampCoreState,
+    stampSetState,
     weaponState,
   ])
 }

@@ -5,6 +5,7 @@ import { MobileMenu } from './components/common/MobileMenu'
 import { ExtraTab } from './components/extra/ExtraTab'
 import { SettingsTab } from './components/settings/SettingsTab'
 import { SkillTab } from './components/skill/SkillTab'
+import { StampPage } from './components/stamp/StampPage'
 import { WeaponTab } from './components/weapon/WeaponTab'
 import { AppStateProvider } from './context/AppStateContext'
 import { useResponsive } from './hooks/useResponsive'
@@ -25,6 +26,7 @@ const tabs: Array<TabDefinition<TabId>> = [
   { id: 'character', label: 'Character', eyebrow: 'EXP and ascension' },
   { id: 'weapon', label: 'Weapon', eyebrow: 'Tamahagane and hammers' },
   { id: 'skill', label: 'Skill', eyebrow: 'Arts and skill costs' },
+  { id: 'stamp', label: 'Stamp', eyebrow: 'Core, set, and nexus stamp' },
   { id: 'extra', label: 'Extra', eyebrow: 'All planners in one' },
   { id: 'settings', label: 'Settings', eyebrow: 'App preferences' },
 ]
@@ -104,6 +106,8 @@ function ActiveTabContent({
       return <WeaponTab />
     case 'skill':
       return <SkillTab />
+    case 'stamp':
+      return <StampPage />
     case 'extra':
       if (isMobile && mobileExtraScreen === 'menu') {
         return <MobileExtraMenu onExtraTabChange={onExtraTabChange} />

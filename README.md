@@ -1,6 +1,6 @@
 # BSR Resource Planner
 
-BSR Resource Planner adalah aplikasi React + TypeScript untuk menghitung kebutuhan resource `Character`, `Weapon`, `Skill`, dan `Extra tools` dalam satu UI yang responsif untuk desktop dan mobile.
+BSR Resource Planner adalah aplikasi React + TypeScript untuk menghitung kebutuhan resource `Character`, `Weapon`, `Skill`, `Stamp`, dan `Extra tools` dalam satu UI yang responsif untuk desktop dan mobile.
 
 ## Fitur
 
@@ -13,9 +13,14 @@ BSR Resource Planner adalah aplikasi React + TypeScript untuk menghitung kebutuh
 - `Skill` calculator
   - hitung kebutuhan art, passive omamori, dan kans
   - support multi-select skill type
+- `Stamp` calculator
+  - `Core Stamp`: card EXP, ectoplasm, dan kans
+  - `Set Stamp`: sama seperti core, ditambah `Nexus Stamp`
+  - `Nexus Stamp` unfarmable dengan progres level `1-10`, `10-15`, `15-20`, `20-25`, `25-30`
 - `Extra`
-  - `Total Planner`: gabungan input `Character + Weapon + Skill`
+  - `Total Planner`: gabungan input `Character + Weapon + Skill + Core Stamp + Set Stamp`
   - `Overview`: ringkasan total hasil gabungan
+  - `Daily Schedule`: manual setup atau pack `Character`, `Core Stamp`, dan `Set Stamp`
 - `Settings`
   - theme switcher dengan persistence ke `localStorage`
 - Mobile UX
@@ -73,6 +78,10 @@ src/
       WeaponTab.tsx
     skill/
       SkillTab.tsx
+    stamp/
+      StampInputs.tsx
+      StampPage.tsx
+      StampTab.tsx
     extra/
       ExtraTab.tsx
       ExtraOverviewContent.tsx
@@ -94,12 +103,16 @@ src/
     useCharacterCalculator.ts
     useResponsive.ts
     useSkillCalculator.ts
+    useStampCalculator.ts
     useTheme.ts
     useTotalPlannerInit.ts
     useWeaponCalculator.ts
   data/
+    character-pack.json
+    default-app-state.json
     default-settings.json
     farming-rewards.json
+    levels.json
     themes.json
   types/
     index.ts
@@ -120,6 +133,7 @@ State utama disimpan di `AppStateContext`:
 - `characterState`
 - `weaponState`
 - `skillState`
+- `stampCoreState` dan `stampSetState`
 
 State dipisah per context slice agar update satu domain tidak memicu render domain lain secara berlebihan.
 
@@ -131,6 +145,7 @@ Perhitungan dipisah ke:
 - `src/hooks/useCharacterCalculator.ts`
 - `src/hooks/useWeaponCalculator.ts`
 - `src/hooks/useSkillCalculator.ts`
+- `src/hooks/useStampCalculator.ts`
 
 Semua kalkulasi utama memakai `useMemo` di level hook.
 
@@ -161,6 +176,8 @@ Beberapa optimasi yang sudah diterapkan:
 
 - `Extra > Total Planner` memakai preset default tertinggi saat pertama dibuka
 - `Total Planner` hanya menampilkan input gabungan dan satu `Extra Output`
+- `Daily Schedule` menyediakan tiga pilihan pack: `Character`, `Core Stamp`, dan `Set Stamp`
+- `Nexus Stamp` tidak masuk ke farming schedule karena unfarmable
 - recommendation material tetap mempertahankan behavior lama
 - mobile flow tetap memakai main menu lalu back ke menu
 
