@@ -82,6 +82,12 @@ body {
   background-attachment: fixed;
 }
 
+@media (max-width: 960px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
 #root {
   width: 100%;
   min-height: 100vh;

@@ -1636,6 +1636,8 @@
   display: grid;
   gap: 10px;
   background: var(--surface-secondary);
+  content-visibility: auto;
+  contain-intrinsic-size: 160px;
 }
 
 .farming-card__header {
@@ -1825,6 +1827,8 @@
 
   .app-header {
     padding: 0 12px;
+    backdrop-filter: none;
+    background: var(--surface-primary);
   }
 
   .app-header__context {
@@ -1843,6 +1847,8 @@
 
   .bottom-nav {
     display: grid;
+    backdrop-filter: none;
+    background: var(--surface-primary);
   }
 
   .workspace {
@@ -1875,9 +1881,9 @@
     padding: 10px 12px 12px;
     overflow: hidden;
     border-radius: 14px;
-    background: color-mix(in srgb, var(--surface-primary) 96%, transparent);
-    backdrop-filter: blur(18px) saturate(120%);
-    box-shadow: var(--shadow-float);
+    background: var(--surface-primary);
+    backdrop-filter: none;
+    box-shadow: 0 -8px 24px rgba(18, 24, 32, 0.08);
   }
 
   .result-panel__toggle {
