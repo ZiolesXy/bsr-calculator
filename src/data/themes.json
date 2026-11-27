@@ -202,5 +202,73 @@
       "--brand-soft": "rgba(155,92,255,0.2)",
       "--shadow-color": "0 25px 70px rgba(155,92,255,0.4)"
     }
+  },
+  {
+    "id": "grimmjow",
+    "label": "Grimmjow",
+    "description": "Pantera - Espada No. 6",
+    "colors": {
+      "--app-bg": "#09131c",
+      "--surface-primary": "#0f1e2c",
+      "--surface-secondary": "#162a3d",
+      "--surface-accent": "#1e3a54",
+      "--text-primary": "#eef7ff",
+      "--text-secondary": "#94b8d6",
+      "--border-color": "rgba(0,180,255,0.2)",
+      "--brand": "#00b4ff",
+      "--brand-soft": "rgba(0,180,255,0.2)",
+      "--shadow-color": "0 25px 70px rgba(0,140,220,0.4)"
+    }
+  },
+  {
+    "id": "unohana",
+    "label": "Unohana",
+    "description": "Bankai Minazuki",
+    "colors": {
+      "--app-bg": "#14080b",
+      "--surface-primary": "#1f0d12",
+      "--surface-secondary": "#2c1219",
+      "--surface-accent": "#3d1822",
+      "--text-primary": "#ffeef2",
+      "--text-secondary": "#cfa3ae",
+      "--border-color": "rgba(220,38,75,0.22)",
+      "--brand": "#dc264b",
+      "--brand-soft": "rgba(220,38,75,0.2)",
+      "--shadow-color": "0 25px 70px rgba(160,20,50,0.45)"
+    }
+  },
+  {
+    "id": "kyoraku",
+    "label": "Kyoraku",
+    "description": "Bankai Katen Kyokotsu Karamatsu Shinju",
+    "colors": {
+      "--app-bg": "#180e16",
+      "--surface-primary": "#241621",
+      "--surface-secondary": "#311e2d",
+      "--surface-accent": "#42283d",
+      "--text-primary": "#fdf2f8",
+      "--text-secondary": "#d4aebf",
+      "--border-color": "rgba(236,72,153,0.2)",
+      "--brand": "#ec4899",
+      "--brand-soft": "rgba(236,72,153,0.2)",
+      "--shadow-color": "0 25px 70px rgba(190,40,115,0.35)"
+    }
+  },
+  {
+    "id": "soifon",
+    "label": "Soi Fon",
+    "description": "Bankai Jakuho Raikoben",
+    "colors": {
+      "--app-bg": "#0c1117",
+      "--surface-primary": "#141c26",
+      "--surface-secondary": "#1d2836",
+      "--surface-accent": "#28374a",
+      "--text-primary": "#f1f5f9",
+      "--text-secondary": "#94a3b8",
+      "--border-color": "rgba(250,204,21,0.22)",
+      "--brand": "#facc15",
+      "--brand-soft": "rgba(250,204,21,0.18)",
+      "--shadow-color": "0 25px 70px rgba(15,25,40,0.6)"
+    }
   }
 ]
