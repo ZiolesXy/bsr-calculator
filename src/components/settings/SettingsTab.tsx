@@ -1,5 +1,4 @@
 import type { ThemeDefinition } from '../../types'
-import { StatCard } from '../common/StatCard'
 
 type SettingsTabProps = {
   themes: ThemeDefinition[]
@@ -9,43 +8,47 @@ type SettingsTabProps = {
 
 export function SettingsTab({ themes, activeTheme, onThemeChange }: SettingsTabProps) {
   return (
-    <>
-      <section className="panel panel--wide">
-        <div className="panel__header">
+    <section className="panel settings-panel">
+      <div className="panel__header">
+        <div>
+          <p className="section-tag">Settings</p>
+          <h2>Themes</h2>
+          <p className="ui-section__description">
+            Pick a character palette. Layout, contrast, and surfaces adapt automatically.
+          </p>
+        </div>
+
+        <div className="settings-active">
+          <span
+            className="settings-active__dot"
+            style={{ background: activeTheme.colors['--brand'] }}
+          />
           <div>
-            <p className="section-tag">Settings</p>
-            <h2>Theme and future options</h2>
+            <span>Active theme</span>
+            <strong>{activeTheme.label}</strong>
           </div>
         </div>
-        <div className="mini-tab-bar">
-          <button type="button" className="mini-tab is-active">
-            Change Theme
+      </div>
+
+      <div className="theme-grid">
+        {themes.map((theme) => (
+          <button
+            key={theme.id}
+            type="button"
+            className={`theme-card ${theme.id === activeTheme.id ? 'is-active' : ''}`}
+            aria-pressed={theme.id === activeTheme.id}
+            onClick={() => onThemeChange(theme.id)}
+          >
+            <div className="theme-card__swatches">
+              <span style={{ background: theme.colors['--surface-primary'] }} />
+              <span style={{ background: theme.colors['--brand'] }} />
+              <span style={{ background: theme.colors['--surface-accent'] }} />
+            </div>
+            <strong>{theme.label}</strong>
+            <p>{theme.description}</p>
           </button>
-        </div>
-        <div className="theme-grid">
-          {themes.map((theme) => (
-            <button
-              key={theme.id}
-              type="button"
-              className={`theme-card ${theme.id === activeTheme.id ? 'is-active' : ''}`}
-              onClick={() => onThemeChange(theme.id)}
-            >
-              <div className="theme-card__swatches">
-                <span style={{ background: theme.colors['--surface-primary'] }} />
-                <span style={{ background: theme.colors['--brand'] }} />
-                <span style={{ background: theme.colors['--surface-accent'] }} />
-              </div>
-              <strong>{theme.label}</strong>
-              <p>{theme.description}</p>
-            </button>
-          ))}
-        </div>
-      </section>
-      <section className="panel stats-panel">
-        <p className="section-tag">Current theme</p>
-        <StatCard label="Active theme" value={activeTheme.label} />
-        <StatCard label="Description" value={activeTheme.description} />
-      </section>
-    </>
+        ))}
+      </div>
+    </section>
   )
 }

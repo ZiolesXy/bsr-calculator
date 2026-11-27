@@ -1,7 +1,7 @@
-import type { MaterialRecommendation } from '../../types'
+import type { MaterialRecommendation, ResourceColor } from '../../types'
 import { formatNumber } from '../../utils/formatter'
-import { RecommendationCard } from '../common/RecommendationCard'
 import { StatCard } from '../common/StatCard'
+import { RarityChips } from '../result/ResultPanel'
 
 type StampSummary = {
   missingExp: number
@@ -37,88 +37,148 @@ type ExtraOverviewContentProps = {
   stampSet: StampSummary
 }
 
-export function ExtraOverviewContent({ character, weapon, skill, stampCore, stampSet }: ExtraOverviewContentProps) {
+const fourColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
+const threeColors: Array<'green' | 'blue' | 'purple'> = ['green', 'blue', 'purple']
+
+function MaterialLine({
+  label,
+  items,
+}: {
+  label: string
+  items: Array<{ color: ResourceColor; value: number }>
+}) {
+  return (
+    <div className="material-line">
+      <span className="material-line__label">{label}</span>
+      <RarityChips items={items} />
+    </div>
+  )
+}
+
+export function ExtraOverviewContent({
+  character,
+  weapon,
+  skill,
+  stampCore,
+  stampSet,
+}: ExtraOverviewContentProps) {
   return (
     <div className="overview-stack">
       <article className="overview-block">
         <div className="overview-block__header">
           <p className="section-tag">Character</p>
-          <strong>Character summary</strong>
+          <strong>Level, books, essence</strong>
         </div>
         <div className="overview-inline-stats">
           <StatCard label="Missing EXP" value={formatNumber(character.missingExp)} />
-          <StatCard label="Level Kans" value={formatNumber(character.levelKans)} />
-          <StatCard label="Ascension Kans" value={formatNumber(character.ascensionKans)} />
+          <StatCard
+            label="Kans"
+            value={formatNumber(character.levelKans + character.ascensionKans)}
+          />
+          <StatCard
+            label="Essence"
+            value={formatNumber(
+              character.essenceNeeded.green +
+                character.essenceNeeded.blue +
+                character.essenceNeeded.purple,
+            )}
+          />
         </div>
-        <RecommendationCard label="Books to prepare" recommendation={character.recommendation} />
-        <StatCard
-          label="Need Essences"
-          value={`${formatNumber(character.essenceNeeded.green)} / ${formatNumber(character.essenceNeeded.blue)} / ${formatNumber(character.essenceNeeded.purple)}`}
+        <MaterialLine
+          label="Books"
+          items={fourColors.map((color) => ({
+            color,
+            value: character.recommendation.counts[color],
+          }))}
+        />
+        <MaterialLine
+          label="Essence"
+          items={threeColors.map((color) => ({ color, value: character.essenceNeeded[color] }))}
         />
       </article>
 
       <article className="overview-block">
         <div className="overview-block__header">
           <p className="section-tag">Weapon</p>
-          <strong>Weapon summary</strong>
+          <strong>Tamahagane, hammers, gold</strong>
         </div>
         <div className="overview-inline-stats">
           <StatCard label="Missing EXP" value={formatNumber(weapon.missingExp)} />
           <StatCard label="Gold" value={formatNumber(weapon.gold)} />
-          <StatCard label="Ascension Kans" value={formatNumber(weapon.ascension)} />
+          <StatCard label="Ascension kans" value={formatNumber(weapon.ascension)} />
         </div>
-        <RecommendationCard label="Tamahagane to prepare" recommendation={weapon.recommendation} />
-        <StatCard
-          label="Need Hammers"
-          value={`${formatNumber(weapon.hammerNeeded.green)} / ${formatNumber(weapon.hammerNeeded.blue)} / ${formatNumber(weapon.hammerNeeded.purple)}`}
+        <MaterialLine
+          label="Tamahagane"
+          items={fourColors.map((color) => ({
+            color,
+            value: weapon.recommendation.counts[color],
+          }))}
+        />
+        <MaterialLine
+          label="Hammers"
+          items={threeColors.map((color) => ({ color, value: weapon.hammerNeeded[color] }))}
         />
       </article>
 
       <article className="overview-block">
         <div className="overview-block__header">
           <p className="section-tag">Skill</p>
-          <strong>Skill summary</strong>
+          <strong>Arts, omamori, passive boosts</strong>
         </div>
         <div className="overview-inline-stats">
-          <StatCard label="Need Arts" value={`${formatNumber(skill.needed.green)} / ${formatNumber(skill.needed.blue)} / ${formatNumber(skill.needed.purple)}`} />
-          <StatCard label="Skill Kans" value={formatNumber(skill.totals.kans)} />
-          <StatCard label="Passive Kans" value={formatNumber(skill.passiveTotalKans)} />
+          <StatCard
+            label="Kans"
+            value={formatNumber(skill.totals.kans + skill.passiveTotalKans)}
+          />
+          <StatCard label="Missing omamori" value={formatNumber(skill.passiveMissingOmamori)} />
+          <StatCard label="Skill types" value={formatNumber(skill.skillMultiplier)} />
         </div>
-        <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
-        <StatCard label="Skill Types Selected" value={formatNumber(skill.skillMultiplier)} />
+        <MaterialLine
+          label="Arts"
+          items={threeColors.map((color) => ({ color, value: skill.needed[color] }))}
+        />
       </article>
 
       <article className="overview-block">
         <div className="overview-block__header">
           <p className="section-tag">Core Stamp</p>
-          <strong>Core stamp summary</strong>
+          <strong>Cards, ectoplasm, kans</strong>
         </div>
         <div className="overview-inline-stats">
           <StatCard label="Missing EXP" value={formatNumber(stampCore.missingExp)} />
           <StatCard label="Kans" value={formatNumber(stampCore.kans)} />
+          <StatCard label="Ectoplasm" value={formatNumber(stampCore.ectoplasmNeeded)} />
         </div>
-        <RecommendationCard label="Cards to prepare" recommendation={stampCore.recommendation} />
-        <StatCard
-          label="Need Ectoplasm"
-          value={formatNumber(stampCore.ectoplasmNeeded)}
+        <MaterialLine
+          label="Cards"
+          items={fourColors.map((color) => ({
+            color,
+            value: stampCore.recommendation.counts[color],
+          }))}
         />
       </article>
 
       <article className="overview-block">
         <div className="overview-block__header">
           <p className="section-tag">Set Stamp</p>
-          <strong>Set stamp summary</strong>
+          <strong>Core costs plus nexus stamp</strong>
         </div>
         <div className="overview-inline-stats">
           <StatCard label="Missing EXP" value={formatNumber(stampSet.missingExp)} />
           <StatCard label="Kans" value={formatNumber(stampSet.kans)} />
-          <StatCard label="Nexus Missing" value={formatNumber(stampSet.nexusMissing)} />
+          <StatCard label="Nexus missing" value={formatNumber(stampSet.nexusMissing)} />
         </div>
-        <RecommendationCard label="Cards to prepare" recommendation={stampSet.recommendation} />
-        <StatCard
-          label="Need Ectoplasm"
-          value={formatNumber(stampSet.ectoplasmNeeded)}
+        <MaterialLine
+          label="Cards"
+          items={fourColors.map((color) => ({
+            color,
+            value: stampSet.recommendation.counts[color],
+          }))}
         />
+        <div className="material-line">
+          <span className="material-line__label">Ectoplasm</span>
+          <span className="overview-value num">{formatNumber(stampSet.ectoplasmNeeded)}</span>
+        </div>
       </article>
     </div>
   )

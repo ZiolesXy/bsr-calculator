@@ -101,15 +101,15 @@ function normalizeStamina(value: string | number, fallback: number) {
 }
 
 function formatEstimatedDuration(days: number) {
-  if (!Number.isFinite(days) || days <= 0) return 'Selesai'
+  if (!Number.isFinite(days) || days <= 0) return 'Done'
 
   const totalHours = Math.max(1, Math.ceil(days * 24))
   const resultDays = Math.floor(totalHours / 24)
   const hours = totalHours % 24
 
-  if (resultDays <= 0) return `${hours} jam`
-  if (hours === 0) return `${resultDays} hari`
-  return `${resultDays} hari ${hours} jam`
+  if (resultDays <= 0) return `${hours} hr`
+  if (hours === 0) return `${resultDays} d`
+  return `${resultDays} d ${hours} hr`
 }
 
 function readSavedSchedule(): { schedule: ScheduleItem[]; dailyStamina: number } {
@@ -439,7 +439,7 @@ const EntryView = memo(function EntryView({ importInput, message, onImportClick,
       <section className="overview-block">
         <div className="overview-block__header">
           <strong>Daily Schedule</strong>
-          <span>Pilih cara mulai sebelum masuk ke schedule utama.</span>
+          <span>Choose how to start before opening the main schedule.</span>
         </div>
         <div className="farming-choice-grid">
           <button type="button" className="schedule-launch-card" onClick={onLoad}>
@@ -453,9 +453,9 @@ const EntryView = memo(function EntryView({ importInput, message, onImportClick,
             <span>Load a JSON export</span>
           </button>
           <button type="button" className="schedule-launch-card" onClick={onSetup}>
-            <small>Manual atau pack</small>
-            <strong>Pilih Kebutuhan</strong>
-            <span>Start from manual setup or character pack</span>
+            <small>Manual or pack</small>
+            <strong>Choose Requirements</strong>
+            <span>Start from manual setup or a character pack</span>
           </button>
         </div>
         {message && <p className="farming-hint">{message}</p>}
@@ -496,7 +496,7 @@ const ManualSetup = memo(function ManualSetup({
     <section className="overview-block">
       <div className="overview-block__header">
         <strong>Manual Setup</strong>
-        <span>Data source mengikuti farming-rewards.json.</span>
+        <span>Rewards follow farming-rewards.json.</span>
       </div>
       <div className="control-grid">
         <label className="field">
@@ -538,7 +538,7 @@ const ManualSetup = memo(function ManualSetup({
         </div>
       </div>
       <p className="farming-hint">
-        Source: {categoryLabels[selection.category]} stage {selection.farmLevel}, {selectedStamina} stamina, reward rata-rata {selectedRewardAmount} {selectedRewardUnit}.
+        Source: {categoryLabels[selection.category]} stage {selection.farmLevel}, {selectedStamina} stamina, average reward {selectedRewardAmount} {selectedRewardUnit}.
       </p>
     </section>
   )
@@ -595,7 +595,7 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
     <section className="overview-block">
       <div className="overview-block__header">
         <strong>Pack Setup</strong>
-        <span>Pilih Character, Core Stamp, atau Set Stamp, lalu generate schedule.</span>
+        <span>Pick Character, Core Stamp, or Set Stamp, then generate a schedule.</span>
       </div>
       <div className="farming-choice-grid">
         {packDefinitions.map((pack) => (
@@ -632,7 +632,7 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
             <section className="overview-block">
               <div className="overview-block__header">
                 <strong>Kans Calculator</strong>
-                <span>Hitung kebutuhan kans dari pack lalu kurangi owned kans.</span>
+                <span>Total kans needed from the pack, minus the kans you own.</span>
               </div>
               <div className="overview-inline-stats">
                 <StatCard label="Total Kans Needed" value={formatNumber(totalKansNeeded)} />
@@ -643,7 +643,7 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
               <div className="token-grid">
                 <PillInput label="Kans owned" color="yellow" value={kansOwned} onChange={onKansOwnedChange} />
               </div>
-              <p className="farming-hint">Formula: total kebutuhan kans dari input pack - kans owned = kans yang masuk schedule.</p>
+              <p className="farming-hint">Formula: pack kans requirement − owned kans = kans added to the schedule.</p>
             </section>
             {packType === 'character' ? (
               <>
@@ -655,7 +655,7 @@ const CharacterPackSetup = memo(function CharacterPackSetup({
               <section className="overview-block">
                 <div className="overview-block__header">
                   <strong>{packType === 'core' ? 'Core Stamp input' : 'Set Stamp input'}</strong>
-                  <span>Input sama seperti Stamp di Total Planner.</span>
+                  <span>Same inputs as Stamp in Total Planner.</span>
                 </div>
                 <StampInputs
                   kind={packType}
@@ -681,7 +681,7 @@ const CharacterPlannerInputs = memo(function CharacterPlannerInputs({ state, onC
     <section className="overview-block">
       <div className="overview-block__header">
         <strong>Character input</strong>
-        <span>Input sama seperti Character di Total Planner.</span>
+        <span>Same inputs as Character in Total Planner.</span>
       </div>
       <div className="control-grid">
         <SelectField label="Current level" value={state.current} options={levelMilestones.slice(0, -1)} onChange={(value) => onChange((prev) => ({ ...prev, current: Number(value) }))} />
@@ -710,7 +710,7 @@ const WeaponPlannerInputs = memo(function WeaponPlannerInputs({ state, onChange 
     <section className="overview-block">
       <div className="overview-block__header">
         <strong>Weapon input</strong>
-        <span>Input sama seperti Weapon di Total Planner.</span>
+        <span>Same inputs as Weapon in Total Planner.</span>
       </div>
       <div className="control-grid">
         <SelectField label="Current level" value={state.current} options={levelMilestones.slice(0, -1)} onChange={(value) => onChange((prev) => ({ ...prev, current: Number(value) }))} />
@@ -739,7 +739,7 @@ const SkillPlannerInputs = memo(function SkillPlannerInputs({ state, onChange }:
     <section className="overview-block">
       <div className="overview-block__header">
         <strong>Skill input</strong>
-        <span>Input sama seperti Skill di Total Planner.</span>
+        <span>Same inputs as Skill in Total Planner.</span>
       </div>
       <div className="control-grid">
         <SelectField label="Current level" value={state.current} options={skillLevels.slice(0, -1)} onChange={(value) => onChange((prev) => ({ ...prev, current: Number(value) }))} />
@@ -822,8 +822,8 @@ const SetupView = memo(function SetupView(props: SetupViewProps) {
     <div className="overview-stack">
       <section className="overview-block">
         <div className="overview-block__header">
-          <strong>Pilih Kebutuhan</strong>
-          <span>Setup manual atau generate otomatis dari pack.</span>
+          <strong>Choose Requirements</strong>
+          <span>Set up manually or generate from a pack.</span>
         </div>
         <div className="farming-toolbar">
           <button type="button" className={`mini-tab ${props.setupMode === 'manual' ? 'is-active' : ''}`} onClick={() => props.onSetupModeChange('manual')}>
@@ -942,11 +942,11 @@ const ScheduleView = memo(function ScheduleView({
       <section className="overview-block">
         <div className="overview-block__header">
           <strong>Daily progress</strong>
-          <span>Progress tidak reset otomatis. Save untuk persist ke local storage.</span>
+          <span>Progress does not reset automatically. Save to persist it to local storage.</span>
         </div>
         <div className="farming-toolbar">
           <button type="button" className="mini-tab" onClick={onEntry}>Entry</button>
-          <button type="button" className="mini-tab" onClick={onSetup}>Tambah Kebutuhan</button>
+          <button type="button" className="mini-tab" onClick={onSetup}>Add Requirements</button>
           <button type="button" className="mini-tab" onClick={onReset}>Reset</button>
           <button type="button" className="mini-tab" onClick={onSave}>Save</button>
           <button type="button" className="mini-tab" onClick={onLoad}>Load</button>
@@ -958,9 +958,9 @@ const ScheduleView = memo(function ScheduleView({
         {exportResult && (
           <div className="farming-export-actions" role="status">
             <div>
-              <strong>File disimpan di internal</strong>
+              <strong>File saved to device storage</strong>
               <span>{exportResult.fileName}</span>
-              {isMobileView && <span>Lokasi export: Documents/bsr-calc/Exports/{exportDate}/{exportResult.fileName}</span>}
+              {isMobileView && <span>Location: Documents/bsr-calc/Exports/{exportDate}/{exportResult.fileName}</span>}
             </div>
             <div className="farming-actions">
               {!isMobileView && (
@@ -971,7 +971,7 @@ const ScheduleView = memo(function ScheduleView({
           </div>
         )}
         <div className="farming-list">
-          {schedule.length === 0 && <div className="coming-soon">Belum ada target farming.</div>}
+          {schedule.length === 0 && <div className="coming-soon">No farming targets yet.</div>}
           {schedule.map((item) => (
             <ScheduleCard
               key={item.id}
@@ -1010,10 +1010,10 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
   const remainingStamina = remainingClicks * staminaPerRun
   const estimatedDays = dailyStamina > 0 ? remainingStamina / dailyStamina : Number.POSITIVE_INFINITY
   const estimateLabel = remainingClicks === 0
-    ? 'Selesai'
+    ? 'Done'
     : dailyStamina > 0
       ? formatEstimatedDuration(estimatedDays)
-      : 'Isi daily stamina'
+      : 'Set daily stamina'
 
   // Calculate total EXP required for card farms
   const totalExpRequired = item.category === 'card' && item.progressUnit === 'farm'
@@ -1027,15 +1027,15 @@ const ScheduleCard = memo(function ScheduleCard({ item, dailyStamina, onRemove, 
           <strong>{item.name} </strong>
           <span>{item.source}</span>
         </div>
-        <button type="button" className="mini-tab" onClick={() => onRemove(item.id)}>Hapus</button>
+        <button type="button" className="mini-tab" onClick={() => onRemove(item.id)}>Remove</button>
       </div>
       <div className="farming-progress" aria-label={`${item.name} progress ${progressPercent}%`}>
         <span style={{ width: `${progressPercent}%` }} />
       </div>
       <div className="farming-card__details">
         <span>{formatNumber(item.progress)} / {formatNumber(item.target)}{progressUnitLabel}</span>
-        {totalExpRequired > 0 && <span>Total EXP dibutuhkan: {formatNumber(totalExpRequired)}</span>}
-        <span>Sisa klik {formatNumber(remainingClicks)} | Estimasi {estimateLabel}</span>
+        {totalExpRequired > 0 && <span>Total EXP needed: {formatNumber(totalExpRequired)}</span>}
+        <span>Runs left {formatNumber(remainingClicks)} · Estimate {estimateLabel}</span>
       </div>
       <div className="farming-card__actions">
         <div className="farming-card__buttons">
@@ -1153,7 +1153,7 @@ export function DailyScheduleContent() {
     setSchedule(saved.schedule)
     setDailyStamina(saved.dailyStamina)
     setView('schedule')
-    setMessage(saved.schedule.length > 0 ? 'Schedule loaded.' : 'Tidak ada data tersimpan.')
+    setMessage(saved.schedule.length > 0 ? 'Schedule loaded.' : 'No saved data found.')
   }, [])
 
   const importSchedule = useCallback(async (file: File) => {
@@ -1198,7 +1198,7 @@ export function DailyScheduleContent() {
           recursive: true,
         })
         setExportResult({ data, fileName })
-        setMessage('File disimpan di internal.')
+        setMessage('File saved to device storage.')
         return
       }
 
@@ -1241,9 +1241,9 @@ export function DailyScheduleContent() {
         return
       }
 
-      setMessage('Share tidak didukung di perangkat ini.')
+      setMessage('Sharing is not supported on this device.')
     } catch {
-      setMessage('Share dibatalkan atau gagal.')
+      setMessage('Share cancelled or failed.')
     }
   }, [exportResult])
 
@@ -1264,7 +1264,7 @@ export function DailyScheduleContent() {
     })
 
     if (isCompleted) {
-      window.alert('Farm item ini sudah selesai.')
+      window.alert('This farming item is already complete.')
     }
   }, [])
 
@@ -1273,7 +1273,7 @@ export function DailyScheduleContent() {
   }, [])
 
   const editTarget = useCallback((id: string) => {
-    const nextTarget = window.prompt('Target baru?')
+    const nextTarget = window.prompt('New target?')
     if (nextTarget === null) return
     setSchedule((current) =>
       current.map((item) => (item.id === id ? { ...item, target: normalizeAmount(nextTarget, item.target) } : item)),
@@ -1310,7 +1310,7 @@ export function DailyScheduleContent() {
       setSchedule((current) => mergeSchedule(current, generatedItems))
       setView('schedule')
       const nexusNote = selectedPack.type === 'set' && stampResult.nexusMissing > 0
-        ? ` Nexus Stamp sisa ${stampResult.nexusMissing} (unfarmable).`
+        ? ` Nexus Stamp missing ${stampResult.nexusMissing} (unfarmable).`
         : ''
       setMessage(`${selectedPack.name} pack generated.${nexusNote}`)
       return

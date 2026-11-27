@@ -1,7 +1,5 @@
-import type { ExtraTabId, MaterialRecommendation } from '../../types'
-import { formatNumber } from '../../utils/formatter'
-import { RecommendationCard } from '../common/RecommendationCard'
-import { StatCard } from '../common/StatCard'
+import type { ExtraTabId, MaterialRecommendation, ResourceColor } from '../../types'
+import { ResultGroup, ResultPanel, ResultRow, RarityChips } from '../result/ResultPanel'
 
 type StampSummary = {
   missingExp: number
@@ -37,51 +35,107 @@ type ExtraOutputPanelProps = {
   }
 }
 
-export function ExtraOutputPanel({ activeExtraTab, character, weapon, skill, stampCore, stampSet, totals }: ExtraOutputPanelProps) {
+const fourColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
+const threeColors: Array<'green' | 'blue' | 'purple'> = ['green', 'blue', 'purple']
+
+function MaterialLine({
+  label,
+  items,
+}: {
+  label: string
+  items: Array<{ color: ResourceColor; value: number }>
+}) {
   return (
-    <section className="panel stats-panel">
-      <p className="section-tag">Extra Output</p>
-      {activeExtraTab === 'total-planner' && (
-        <>
-          <StatCard label="Character Missing EXP" value={formatNumber(character.missingExp)} />
-          <RecommendationCard label="Books to prepare" recommendation={character.recommendation} />
-          <StatCard label="Need Essences" value={`${formatNumber(character.essenceNeeded.green)} / ${formatNumber(character.essenceNeeded.blue)} / ${formatNumber(character.essenceNeeded.purple)}`} />
-          <StatCard label="Weapon Missing EXP" value={formatNumber(weapon.missingExp)} />
-          <RecommendationCard label="Tamahagane to prepare" recommendation={weapon.recommendation} />
-          <StatCard label="Need Hammers" value={`${formatNumber(weapon.hammerNeeded.green)} / ${formatNumber(weapon.hammerNeeded.blue)} / ${formatNumber(weapon.hammerNeeded.purple)}`} />
-          <StatCard label="Need Arts" value={`${formatNumber(skill.needed.green)} / ${formatNumber(skill.needed.blue)} / ${formatNumber(skill.needed.purple)}`} />
-          <StatCard label="Total Kans All" value={formatNumber(totals.totalKansCombined)} />
-          <StatCard label="Weapon Gold" value={formatNumber(weapon.gold)} />
-          <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
-          <StatCard label="Skill Types Selected" value={formatNumber(skill.skillMultiplier)} />
-          <StatCard label="Core Stamp Missing EXP" value={formatNumber(stampCore.missingExp)} />
-          <RecommendationCard label="Core cards to prepare" recommendation={stampCore.recommendation} />
-          <StatCard label="Set Stamp Missing EXP" value={formatNumber(stampSet.missingExp)} />
-          <RecommendationCard label="Set cards to prepare" recommendation={stampSet.recommendation} />
-          <StatCard label="Stamp Kans" value={formatNumber(stampCore.kans + stampSet.kans)} />
-          <StatCard label="Nexus Missing" value={formatNumber(stampSet.nexusMissing)} />
-        </>
-      )}
-      {activeExtraTab === 'overview' && (
-        <>
-          <StatCard label="Total Missing EXP" value={formatNumber(totals.totalExpMissing)} />
-          <StatCard label="Total Kans All" value={formatNumber(totals.totalKansCombined)} />
-          <StatCard label="Weapon Gold" value={formatNumber(weapon.gold)} />
-          <StatCard label="Missing Omamori" value={formatNumber(skill.passiveMissingOmamori)} />
-          <StatCard label="Books Extra EXP" value={formatNumber(character.recommendation.overshoot)} />
-          <StatCard label="Tamahagane Extra EXP" value={formatNumber(weapon.recommendation.overshoot)} />
-          <StatCard label="Core Stamp Missing EXP" value={formatNumber(stampCore.missingExp)} />
-          <StatCard label="Set Stamp Missing EXP" value={formatNumber(stampSet.missingExp)} />
-          <StatCard label="Nexus Missing" value={formatNumber(stampSet.nexusMissing)} />
-        </>
-      )}
-      {activeExtraTab === 'daily-schedule' && (
-        <>
-          <StatCard label="Storage" value="Local" />
-          <StatCard label="Import / Export" value=".json" />
-          <StatCard label="Progress Reset" value="Manual" />
-        </>
-      )}
-    </section>
+    <div className="material-line">
+      <span className="material-line__label">{label}</span>
+      <RarityChips items={items} />
+    </div>
+  )
+}
+
+export function ExtraOutputPanel({
+  activeExtraTab,
+  character,
+  weapon,
+  skill,
+  stampCore,
+  stampSet,
+  totals,
+}: ExtraOutputPanelProps) {
+  if (activeExtraTab === 'daily-schedule') {
+    return (
+      <section className="panel stats-panel" aria-label="Schedule details">
+        <p className="section-tag">Schedule storage</p>
+        <ResultGroup title="This device">
+          <ResultRow label="Storage" value="Local storage" />
+          <ResultRow label="Import / export" value=".json" />
+          <ResultRow label="Progress reset" value="Manual" />
+        </ResultGroup>
+      </section>
+    )
+  }
+
+  const combinedCards = fourColors.map((color) => ({
+    color,
+    value: stampCore.recommendation.counts[color] + stampSet.recommendation.counts[color],
+  }))
+
+  return (
+    <ResultPanel
+      eyebrow={activeExtraTab === 'overview' ? 'Combined overview' : 'Total planner output'}
+    >
+      <ResultGroup title="Missing EXP by source">
+        <ResultRow label="Character" value={character.missingExp} />
+        <ResultRow label="Weapon" value={weapon.missingExp} />
+        <ResultRow label="Core stamp" value={stampCore.missingExp} />
+        <ResultRow label="Set stamp" value={stampSet.missingExp} />
+      </ResultGroup>
+
+      <ResultGroup title="Materials">
+        <MaterialLine
+          label="Books"
+          items={fourColors.map((color) => ({
+            color,
+            value: character.recommendation.counts[color],
+          }))}
+        />
+        <MaterialLine
+          label="Tamahagane"
+          items={fourColors.map((color) => ({
+            color,
+            value: weapon.recommendation.counts[color],
+          }))}
+        />
+        <MaterialLine
+          label="Cards"
+          items={combinedCards}
+        />
+        <MaterialLine
+          label="Arts"
+          items={threeColors.map((color) => ({ color, value: skill.needed[color] }))}
+        />
+        <MaterialLine
+          label="Essence"
+          items={threeColors.map((color) => ({ color, value: character.essenceNeeded[color] }))}
+        />
+        <MaterialLine
+          label="Hammers"
+          items={threeColors.map((color) => ({ color, value: weapon.hammerNeeded[color] }))}
+        />
+      </ResultGroup>
+
+      <ResultGroup title="Costs">
+        <ResultRow label="Kans (all sources)" value={totals.totalKansCombined} />
+        <ResultRow label="Weapon gold" value={weapon.gold} />
+        <ResultRow label="Missing omamori" value={skill.passiveMissingOmamori} />
+        <ResultRow
+          label="Nexus missing"
+          value={stampSet.nexusMissing}
+          hint="unfarmable"
+          tone={stampSet.nexusMissing > 0 ? 'danger' : 'muted'}
+        />
+        <ResultRow label="Skill types selected" value={skill.skillMultiplier} tone="muted" />
+      </ResultGroup>
+    </ResultPanel>
   )
 }

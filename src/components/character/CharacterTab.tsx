@@ -1,20 +1,28 @@
 import { memo } from 'react'
 import { useCharacterState } from '../../context/AppStateContext'
-import { materialModes, levelMilestones } from '../../utils/calculator'
-import { formatNumber } from '../../utils/formatter'
-import { PillInput } from '../common/PillInput'
-import { RecommendationCard } from '../common/RecommendationCard'
-import { SelectField } from '../common/SelectField'
-import { StatCard } from '../common/StatCard'
 import { useCharacterCalculator } from '../../hooks/useCharacterCalculator'
+import type { ResourceColor } from '../../types'
+import { levelMilestones, materialModes } from '../../utils/calculator'
+import { FieldGroup, ResetButton } from '../common/FieldGroup'
+import { PillInput } from '../common/PillInput'
+import { SelectField } from '../common/SelectField'
+import { RarityChips, ResultGroup, ResultPanel, ResultRow } from '../result/ResultPanel'
 
 type CharacterTabProps = {
   showOutput?: boolean
 }
 
+const bookColors: ResourceColor[] = ['green', 'blue', 'purple', 'yellow']
+const essenceColors: Array<'green' | 'blue' | 'purple'> = ['green', 'blue', 'purple']
+const emptyCounts = { green: 0, blue: 0, purple: 0, yellow: 0 }
+
 export function CharacterTab({ showOutput = true }: CharacterTabProps) {
   const { characterState: state, setCharacterState } = useCharacterState()
   const result = useCharacterCalculator(state)
+
+  const resetBooks = () => setCharacterState((prev) => ({ ...prev, ownedBooks: { ...emptyCounts } }))
+  const resetEssences = () =>
+    setCharacterState((prev) => ({ ...prev, ownedEssences: { green: 0, blue: 0, purple: 0 } }))
 
   return (
     <>
@@ -22,55 +30,118 @@ export function CharacterTab({ showOutput = true }: CharacterTabProps) {
         <div className="panel__header">
           <div>
             <p className="section-tag">Character</p>
-            <h2>Level, book, and essence calculator</h2>
+            <h2>Level, book, and essence</h2>
+            <p className="ui-section__description">
+              Set a level range, then add the materials you already own.
+            </p>
           </div>
         </div>
-        <div className="control-grid">
-          <SelectField
-            label="Current level"
-            value={state.current}
-            options={levelMilestones.slice(0, -1)}
-            onChange={(value) => setCharacterState((prev) => ({ ...prev, current: Number(value) }))}
-          />
-          <SelectField
-            label="Target level"
-            value={state.target}
-            options={levelMilestones.slice(1)}
-            onChange={(value) => setCharacterState((prev) => ({ ...prev, target: Number(value) }))}
-          />
-          <SelectField
-            label="Book mode"
-            value={state.bookMode}
-            options={materialModes}
-            onChange={(value) => setCharacterState((prev) => ({ ...prev, bookMode: value as typeof prev.bookMode }))}
-          />
-        </div>
-        <div className="token-grid">
-          <PillInput label="Green books" color="green" value={state.ownedBooks.green} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedBooks: { ...prev.ownedBooks, green: value } }))} />
-          <PillInput label="Blue books" color="blue" value={state.ownedBooks.blue} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedBooks: { ...prev.ownedBooks, blue: value } }))} />
-          <PillInput label="Purple books" color="purple" value={state.ownedBooks.purple} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedBooks: { ...prev.ownedBooks, purple: value } }))} />
-          <PillInput label="Yellow books" color="yellow" value={state.ownedBooks.yellow} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedBooks: { ...prev.ownedBooks, yellow: value } }))} />
-          <PillInput label="Green essence" color="green" value={state.ownedEssences.green} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedEssences: { ...prev.ownedEssences, green: value } }))} />
-          <PillInput label="Blue essence" color="blue" value={state.ownedEssences.blue} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedEssences: { ...prev.ownedEssences, blue: value } }))} />
-          <PillInput label="Purple essence" color="purple" value={state.ownedEssences.purple} onChange={(value) => setCharacterState((prev) => ({ ...prev, ownedEssences: { ...prev.ownedEssences, purple: value } }))} />
-        </div>
+
+        <FieldGroup title="Level range" caption="Milestones advance every 10 levels.">
+          <div className="control-grid">
+            <SelectField
+              label="Current level"
+              value={state.current}
+              options={levelMilestones.slice(0, -1)}
+              onChange={(value) => setCharacterState((prev) => ({ ...prev, current: Number(value) }))}
+            />
+            <SelectField
+              label="Target level"
+              value={state.target}
+              options={levelMilestones.slice(1)}
+              onChange={(value) => setCharacterState((prev) => ({ ...prev, target: Number(value) }))}
+            />
+            <SelectField
+              label="Book mode"
+              value={state.bookMode}
+              options={materialModes}
+              onChange={(value) =>
+                setCharacterState((prev) => ({ ...prev, bookMode: value as typeof prev.bookMode }))
+              }
+            />
+          </div>
+        </FieldGroup>
+
+        <FieldGroup
+          title="Books owned"
+          caption="Applied before essence."
+          action={<ResetButton label="Reset" onClick={resetBooks} />}
+        >
+          <div className="token-grid">
+            {bookColors.map((color) => (
+              <PillInput
+                key={color}
+                label={`${color} books`}
+                color={color}
+                value={state.ownedBooks[color]}
+                onChange={(value) =>
+                  setCharacterState((prev) => ({
+                    ...prev,
+                    ownedBooks: { ...prev.ownedBooks, [color]: value },
+                  }))
+                }
+              />
+            ))}
+          </div>
+        </FieldGroup>
+
+        <FieldGroup
+          title="Essence owned"
+          caption="Covers ascension breakpoints in range."
+          action={<ResetButton label="Reset" onClick={resetEssences} />}
+        >
+          <div className="token-grid token-grid--three">
+            {essenceColors.map((color) => (
+              <PillInput
+                key={color}
+                label={`${color} essence`}
+                color={color}
+                value={state.ownedEssences[color]}
+                onChange={(value) =>
+                  setCharacterState((prev) => ({
+                    ...prev,
+                    ownedEssences: { ...prev.ownedEssences, [color]: value },
+                  }))
+                }
+              />
+            ))}
+          </div>
+        </FieldGroup>
       </section>
+
       {showOutput && (
-        <section className="panel stats-panel">
-          <p className="section-tag">Output</p>
-          <StatCard label="Total EXP" value={formatNumber(result.expRequired)} />
-          <StatCard label="Owned EXP" value={formatNumber(result.ownedExp)} />
-          <StatCard label="Missing EXP" value={formatNumber(result.missingExp)} />
-          <RecommendationCard label="Book recommendation" recommendation={result.recommendation} />
-          <StatCard label="Recommended EXP" value={formatNumber(result.recommendation.totalExp)} />
-          <StatCard label="Extra EXP" value={formatNumber(result.recommendation.overshoot)} />
-          <StatCard label="Level Kans" value={formatNumber(result.levelKans)} />
-          <StatCard label="Ascension Kans" value={formatNumber(result.ascensionKans)} />
-          <StatCard
-            label="Need Essences"
-            value={`${formatNumber(result.essenceNeeded.green)} / ${formatNumber(result.essenceNeeded.blue)} / ${formatNumber(result.essenceNeeded.purple)}`}
-          />
-        </section>
+        <ResultPanel eyebrow="Character output">
+          <ResultGroup title="EXP">
+            <ResultRow label="Total EXP" value={result.expRequired} />
+            <ResultRow label="Owned EXP" value={result.ownedExp} tone="muted" />
+            <ResultRow label="Recommended" value={result.recommendation.totalExp} />
+            <ResultRow label="Extra" value={result.recommendation.overshoot} tone="muted" />
+          </ResultGroup>
+
+          <ResultGroup title="Books to prepare">
+            <RarityChips
+              items={bookColors.map((color) => ({
+                color,
+                value: result.recommendation.counts[color],
+                percent: result.recommendation.percentages[color],
+              }))}
+            />
+          </ResultGroup>
+
+          <ResultGroup title="Kans">
+            <ResultRow label="Level kans" value={result.levelKans} />
+            <ResultRow label="Ascension kans" value={result.ascensionKans} />
+          </ResultGroup>
+
+          <ResultGroup title="Essence needed">
+            <RarityChips
+              items={essenceColors.map((color) => ({
+                color,
+                value: result.essenceNeeded[color],
+              }))}
+            />
+          </ResultGroup>
+        </ResultPanel>
       )}
     </>
   )
